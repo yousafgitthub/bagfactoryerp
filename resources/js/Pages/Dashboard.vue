@@ -323,9 +323,9 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
     <Head title="Dashboard" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <div class="grid items-center gap-4 lg:grid-cols-5">
-            <div class="lg:col-span-2">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
+        <div class="min-w-0 grid items-center gap-3 sm:gap-4 lg:grid-cols-5">
+            <div class="min-w-0 lg:col-span-2">
+                <h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-2xl lg:text-3xl">
                     Welcome back, <span class="text-[#3154d6] dark:text-indigo-300">{{ userName }}</span>!
                 </h2>
                 <p class="mt-2 text-sm text-erp-muted">
@@ -334,10 +334,12 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
                 <div class="mt-3 h-1 w-16 rounded-full bg-[#5468f5]" />
             </div>
 
-            <section class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#1e3a8a] via-[#2563eb] to-[#38bdf8] p-6 text-white shadow-lg lg:col-span-3">
+            <section
+                class="relative min-w-0 overflow-hidden rounded-2xl bg-gradient-to-r from-[#1e3a8a] via-[#2563eb] to-[#38bdf8] p-4 text-white shadow-lg sm:rounded-3xl sm:p-6 lg:col-span-3"
+            >
                 <div class="relative z-10 max-w-sm">
-                    <h3 class="text-2xl font-bold leading-tight">Quality Bags.<br />Built for Your Business.</h3>
-                    <p class="mt-2 text-sm text-white/85">Premium Plastic Bags &amp; Customized Solutions</p>
+                    <h3 class="text-lg font-bold leading-tight sm:text-2xl">Quality Bags.<br />Built for Your Business.</h3>
+                    <p class="mt-1.5 text-xs text-white/85 sm:mt-2 sm:text-sm">Premium Plastic Bags &amp; Customized Solutions</p>
                     <Link
                         v-if="productsHref"
                         :href="productsHref"
@@ -346,7 +348,11 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
                         View Products →
                     </Link>
                 </div>
-                <svg class="mt-4 h-24 w-full sm:pointer-events-none sm:absolute sm:inset-y-0 sm:right-0 sm:mt-0 sm:h-full sm:w-[46%]" viewBox="0 0 320 160" aria-hidden="true">
+                <svg
+                    class="mt-3 hidden h-24 w-full max-w-full sm:pointer-events-none sm:absolute sm:inset-y-0 sm:right-0 sm:mt-0 sm:block sm:h-full sm:w-[46%]"
+                    viewBox="0 0 320 160"
+                    aria-hidden="true"
+                >
                     <g transform="translate(8 28)">
                         <path d="M18 36h46l6 78H12z" fill="#f472b6" />
                         <path d="M26 36c8-22 22-22 30 0" fill="none" stroke="#f472b6" stroke-width="6" stroke-linecap="round" />
@@ -371,17 +377,17 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
             </section>
         </div>
 
-        <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="mt-4 grid min-w-0 gap-3 sm:mt-6 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <article
                 v-for="card in heroCards"
                 :key="card.key"
-                class="relative min-h-[9.5rem] overflow-hidden rounded-2xl p-5 pb-8 text-white shadow-lg transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+                class="relative min-h-[8.5rem] overflow-hidden rounded-2xl p-4 pb-7 text-white shadow-lg transition duration-200 hover:-translate-y-0.5 hover:shadow-xl sm:min-h-[9.5rem] sm:p-5 sm:pb-8"
                 :class="card.tone"
             >
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
                         <p class="text-sm font-medium text-white/90">{{ card.label }}</p>
-                        <p class="mt-2 text-3xl font-bold tracking-tight tabular-nums">{{ formatQty(card.value) }}</p>
+                        <p class="mt-1.5 text-2xl font-bold tracking-tight tabular-nums sm:mt-2 sm:text-3xl">{{ formatQty(card.value) }}</p>
                         <p v-if="card.hint" class="mt-1 line-clamp-2 text-xs text-white/80">{{ card.hint }}</p>
                     </div>
                     <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20">
@@ -395,8 +401,8 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
             </article>
         </div>
 
-        <div class="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-12">
-            <section class="erp-card p-5 lg:col-span-2 xl:col-span-6">
+        <div class="mt-4 grid min-w-0 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-2 xl:grid-cols-12">
+            <section class="erp-card min-w-0 p-4 sm:p-5 lg:col-span-2 xl:col-span-6">
                 <div class="flex flex-col gap-3">
                     <div>
                         <h3 class="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-slate-50">
@@ -427,13 +433,13 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
                 </div>
             </section>
 
-            <section class="erp-card p-5 xl:col-span-3">
+            <section class="erp-card min-w-0 p-4 sm:p-5 xl:col-span-3">
                 <h3 class="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-slate-50">
                     <ErpIcon name="cube" class="h-5 w-5 text-indigo-500" />
                     Inventory Overview
                 </h3>
-                <div class="mt-4 flex flex-col items-center gap-4 sm:flex-row xl:flex-col">
-                    <div class="relative h-36 w-36 shrink-0">
+                <div class="mt-3 flex flex-col items-center gap-3 sm:mt-4 sm:gap-4 sm:flex-row xl:flex-col">
+                    <div class="relative h-32 w-32 shrink-0 sm:h-36 sm:w-36">
                         <svg viewBox="0 0 100 100" class="h-full w-full -rotate-90">
                             <circle cx="50" cy="50" r="36" fill="none" stroke="currentColor" stroke-width="12" class="text-slate-100 dark:text-slate-800" />
                             <circle
@@ -473,12 +479,12 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
                 </div>
             </section>
 
-            <section class="erp-card p-5 xl:col-span-3">
+            <section class="erp-card min-w-0 p-4 sm:p-5 xl:col-span-3">
                 <h3 class="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-slate-50">
                     <ErpIcon name="bolt" class="h-5 w-5 text-indigo-500" />
                     Quick Actions
                 </h3>
-                <div v-if="quickActions.length" class="mt-4 grid grid-cols-2 gap-3">
+                <div v-if="quickActions.length" class="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:gap-3">
                     <Link
                         v-for="action in quickActions"
                         :key="action.key"
@@ -494,14 +500,18 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
             </section>
         </div>
 
-        <div class="mt-6 grid gap-4 lg:grid-cols-2">
-            <section class="erp-card p-5">
-                <div class="flex items-center justify-between gap-3">
-                    <h3 class="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-slate-50">
-                        <ErpIcon name="receipt" class="h-5 w-5 text-indigo-500" />
+        <div class="mt-4 grid min-w-0 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-2">
+            <section class="erp-card min-w-0 p-4 sm:p-5">
+                <div class="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                    <h3 class="flex min-w-0 items-center gap-2 text-base font-semibold text-slate-900 dark:text-slate-50">
+                        <ErpIcon name="receipt" class="h-5 w-5 shrink-0 text-indigo-500" />
                         Recent Transactions
                     </h3>
-                    <Link v-if="ledgerHref" :href="ledgerHref" class="text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-300">
+                    <Link
+                        v-if="ledgerHref"
+                        :href="ledgerHref"
+                        class="shrink-0 text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-300"
+                    >
                         View all →
                     </Link>
                 </div>
@@ -516,19 +526,19 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
                                 <p class="text-xs text-erp-muted">{{ formatWhen(row.occurred_at) }}</p>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between gap-3 sm:justify-end">
+                        <div class="flex min-w-0 flex-wrap items-center justify-between gap-2 sm:justify-end sm:gap-3">
                             <span class="text-sm font-semibold tabular-nums">{{ formatQty(row.amount) }}</span>
-                            <ErpStatusBadge :status="movementTone(row.type)" :label="row.type" />
+                            <ErpStatusBadge class="shrink-0" :status="movementTone(row.type)" :label="row.type" />
                         </div>
                     </li>
                 </ul>
                 <p v-else class="mt-4 text-sm text-erp-muted">{{ listEmpty('No stock movements yet') }}</p>
             </section>
 
-            <section class="erp-card p-5">
-                <div class="flex items-center justify-between gap-3">
-                    <h3 class="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-slate-50">
-                        <ErpIcon name="alert" class="h-5 w-5 text-rose-500" />
+            <section class="erp-card min-w-0 p-4 sm:p-5">
+                <div class="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                    <h3 class="flex min-w-0 items-center gap-2 text-base font-semibold text-slate-900 dark:text-slate-50">
+                        <ErpIcon name="alert" class="h-5 w-5 shrink-0 text-rose-500" />
                         Low Stock Alerts
                     </h3>
                     <Link v-if="stockHref" :href="stockHref" class="text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-300">
@@ -543,9 +553,9 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
                             </span>
                             <p class="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">{{ item.title }}</p>
                         </div>
-                        <div class="flex items-center justify-between gap-3 sm:justify-end">
-                            <span class="text-sm text-erp-muted">{{ item.detail }}</span>
-                            <ErpStatusBadge :status="item.severity ?? 'warning'" :label="item.severity ?? 'warning'" />
+                        <div class="flex min-w-0 flex-wrap items-center justify-between gap-2 sm:justify-end sm:gap-3">
+                            <span class="truncate text-sm text-erp-muted">{{ item.detail }}</span>
+                            <ErpStatusBadge class="shrink-0" :status="item.severity ?? 'warning'" :label="item.severity ?? 'warning'" />
                         </div>
                     </li>
                 </ul>
@@ -553,10 +563,10 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
             </section>
         </div>
 
-        <section class="mt-6">
+        <section class="mt-4 min-w-0 sm:mt-6">
             <h3 class="text-base font-semibold text-slate-900 dark:text-slate-50">Other live figures</h3>
             <p class="mt-1 text-sm text-erp-muted">Remaining summary cards from the same dashboard payload.</p>
-            <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="mt-3 grid min-w-0 gap-3 sm:mt-4 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <ErpSummaryCard
                     v-for="card in otherCards"
                     :key="card.key"
@@ -567,14 +577,14 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
             </div>
         </section>
 
-        <div class="mt-6 grid gap-4 lg:grid-cols-2">
-            <section class="erp-card p-5">
+        <div class="mt-4 grid min-w-0 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-2">
+            <section class="erp-card min-w-0 p-4 sm:p-5">
                 <h3 class="text-base font-semibold text-slate-900 dark:text-slate-50">Monthly sales &amp; expenses</h3>
-                <div class="mt-4 space-y-3">
-                    <div v-for="row in monthlyBars" :key="row.month">
-                        <div class="flex justify-between gap-3 text-xs">
+                <div class="mt-3 space-y-3 sm:mt-4">
+                    <div v-for="row in monthlyBars" :key="row.month" class="min-w-0">
+                        <div class="flex flex-col gap-0.5 text-xs sm:flex-row sm:justify-between sm:gap-3">
                             <span class="text-erp-muted">{{ row.month }}</span>
-                            <span class="tabular-nums">Sales {{ formatQty(row.sales) }} · Exp {{ formatQty(row.expenses) }}</span>
+                            <span class="tabular-nums break-words sm:text-right">Sales {{ formatQty(row.sales) }} · Exp {{ formatQty(row.expenses) }}</span>
                         </div>
                         <div class="mt-1 flex h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                             <span class="bg-blue-500" :style="{ width: barWidth(row.sales) }" />
@@ -585,8 +595,8 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
                 </div>
             </section>
 
-            <div class="grid gap-4">
-                <section class="erp-card p-5">
+            <div class="grid min-w-0 gap-3 sm:gap-4">
+                <section class="erp-card min-w-0 p-4 sm:p-5">
                     <h3 class="text-base font-semibold text-slate-900 dark:text-slate-50">Waste</h3>
                     <dl class="mt-3 space-y-2 text-sm">
                         <div class="flex justify-between gap-2">
@@ -599,7 +609,7 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
                         </div>
                     </dl>
                 </section>
-                <section class="erp-card grid gap-5 p-5 sm:grid-cols-2">
+                <section class="erp-card grid min-w-0 gap-4 p-4 sm:grid-cols-2 sm:gap-5 sm:p-5">
                     <div>
                         <h3 class="text-base font-semibold text-slate-900 dark:text-slate-50">Payroll overview</h3>
                         <dl class="mt-3 space-y-2 text-sm">
@@ -638,7 +648,7 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
             </div>
         </div>
 
-        <div class="mt-6 grid gap-4 lg:grid-cols-2">
+        <div class="mt-4 grid min-w-0 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-2">
             <section class="min-w-0">
                 <h3 class="mb-3 text-base font-semibold text-slate-900 dark:text-slate-50">Machine-wise production</h3>
                 <ErpDataTable

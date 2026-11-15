@@ -200,3 +200,51 @@ Active item detection: longest matching path among module hub **and** declared c
 - HR payroll advances/loans forms — no extra intro copy.
 - Collapsed sidebar still hides nested links until expanded.
 - Optional: `ErpFormField` labels on legacy filter rows (e.g. batch # placeholders).
+
+---
+
+## 8. Wave 3 implementation log
+
+**Branch:** `cursor/erp-ux-improvement-0c65` (continued)  
+**Date:** 2026-11-15
+
+### Completed scope
+
+| Item | Done |
+|------|------|
+| Dashboard mobile density (`min-w-0`, tighter gaps, stacked promo on small screens) | Yes |
+| Sidebar collapse persistence + pathname-based child highlighting | Yes — `useErpSidebarCollapsed`, `erpSidebarState.js` |
+| Dana / Bag hub recent-batch empty states | Yes — `ErpEmptyState` with create CTA when permitted |
+| Master data indexes hide numeric `id` when code/name columns exist | Yes — `MasterDataRegistry::tableColumnsForIndex` |
+| Payroll advances & loans form labels / help | Yes — `ErpFormField` + `helpText` on headers |
+| Optional filter labels (Dana/Bag batch lists, Dana costing dates) | Yes |
+
+### Files changed
+
+- `resources/js/Pages/Dashboard.vue`
+- `resources/js/Layouts/ErpLayout.vue`, `resources/js/Components/Erp/ErpSidebar.vue`
+- `resources/js/composables/useErpSidebarCollapsed.js`, `resources/js/support/erpSidebarState.js`
+- `resources/js/Pages/Dana/Hub.vue`, `resources/js/Pages/Bag/Hub.vue`
+- `resources/js/Pages/Dana/Batches/Index.vue`, `resources/js/Pages/Bag/Batches/Index.vue`, `resources/js/Pages/Dana/Reports/Costing.vue`
+- `resources/js/Pages/Hr/Payroll/Advances/Form.vue`, `resources/js/Pages/Hr/Payroll/Loans/Form.vue`
+- `app/Support/MasterDataRegistry.php`, `app/Http/Controllers/MasterData/MasterDataController.php`
+- `tests/Feature/ErpUxWave3Test.php`, `tests/js/erpSidebarState.test.mjs`
+- `docs/erp-ux-audit-and-plan.md` (this section)
+
+### Tests run
+
+- `php artisan test` — **108 passed** (612 assertions), including 4 new `ErpUxWave3Test` cases
+- `node --test tests/js/erpSidebarState.test.mjs` — 3 passed (sidebar persistence helpers)
+- `npm run build` — success
+
+### Responsive check (manual)
+
+- Desktop (~1440px): layout unchanged in spirit; sidebar collapse persists across reload
+- Tablet (~768px): dashboard cards and filter grids use two columns; no horizontal scroll observed in devtools
+- Mobile (~390px): hero illustration hidden, tighter card padding, transaction rows stack; mobile drawer pattern unchanged
+- Reference mobile density mock: Project store `media/dashboard-mobile-wave3.png` (post-change layout reference)
+
+### Remaining UX issues (post–Wave 3)
+
+- Collapsed desktop sidebar still shows hub icon only for multi-link modules (no fly-out menu).
+- Broader optional-filter labeling on other legacy list pages (beyond Dana/Bag/costing) remains backlog.

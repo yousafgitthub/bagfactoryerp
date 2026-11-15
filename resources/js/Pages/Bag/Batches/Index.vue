@@ -1,5 +1,6 @@
 <script setup>
 import ErpDataTable from '@/Components/Erp/ErpDataTable.vue';
+import ErpFormField from '@/Components/Erp/ErpFormField.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpStatusBadge from '@/Components/Erp/ErpStatusBadge.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
@@ -34,16 +35,25 @@ const applyFilters = () => router.get(route('bag.batches.index'), localFilters, 
             </template>
         </ErpPageHeader>
 
-        <form class="erp-card mb-4 grid gap-3 p-4 sm:grid-cols-3" @submit.prevent="applyFilters">
-            <select v-model="localFilters.status" class="erp-input">
-                <option value="">All statuses</option>
-                <option v-for="(label, key) in statuses" :key="key" :value="key">{{ label }}</option>
-            </select>
-            <select v-model="localFilters.machine_id" class="erp-input">
-                <option value="">All machines</option>
-                <option v-for="m in machines" :key="m.id" :value="m.id">{{ m.name }}</option>
-            </select>
-            <button type="submit" class="erp-btn-secondary">Filter</button>
+        <form class="erp-card mb-4 grid gap-3 p-4 sm:grid-cols-2" @submit.prevent="applyFilters">
+            <p class="sm:col-span-2 text-xs text-erp-muted">All filters are optional — leave selections empty to show every batch.</p>
+            <ErpFormField label="Status" name="status" help="Optional — narrow by workflow state.">
+                <template #default="{ describedBy }">
+                    <select id="status" v-model="localFilters.status" class="erp-input w-full" :aria-describedby="describedBy">
+                        <option value="">All statuses</option>
+                        <option v-for="(label, key) in statuses" :key="key" :value="key">{{ label }}</option>
+                    </select>
+                </template>
+            </ErpFormField>
+            <ErpFormField label="Machine" name="machine_id" help="Optional — show batches for one machine only.">
+                <template #default="{ describedBy }">
+                    <select id="machine_id" v-model="localFilters.machine_id" class="erp-input w-full" :aria-describedby="describedBy">
+                        <option value="">All machines</option>
+                        <option v-for="m in machines" :key="m.id" :value="m.id">{{ m.name }}</option>
+                    </select>
+                </template>
+            </ErpFormField>
+            <button type="submit" class="erp-btn-secondary sm:col-span-2">Apply filters</button>
         </form>
 
         <ErpDataTable

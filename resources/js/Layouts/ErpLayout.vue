@@ -7,6 +7,7 @@ import ErpFlashAlert from '@/Components/Erp/ErpFlashAlert.vue';
 import ErpIcon from '@/Components/Erp/ErpIcon.vue';
 import ErpSidebar from '@/Components/Erp/ErpSidebar.vue';
 import { useErpSearch } from '@/composables/useErpSearch';
+import { useErpSidebarCollapsed } from '@/composables/useErpSidebarCollapsed';
 import { useErpTheme } from '@/composables/useErpTheme';
 
 defineProps({
@@ -22,7 +23,7 @@ defineProps({
 
 const page = usePage();
 const sidebarOpen = ref(false);
-const sidebarCollapsed = ref(false);
+const { collapsed: sidebarCollapsed, toggle: toggleSidebarCollapsed } = useErpSidebarCollapsed();
 const notesOpen = ref(false);
 const { isDark, setDark } = useErpTheme();
 const { query } = useErpSearch();
@@ -102,7 +103,7 @@ const submitSearch = () => {
             :collapsed="sidebarCollapsed"
             :mobile-open="sidebarOpen"
             :app-name="page.props.appName"
-            @toggle-collapsed="sidebarCollapsed = !sidebarCollapsed"
+            @toggle-collapsed="toggleSidebarCollapsed"
             @close-mobile="sidebarOpen = false"
         />
 

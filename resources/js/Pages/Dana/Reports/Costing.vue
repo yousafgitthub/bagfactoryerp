@@ -1,5 +1,6 @@
 <script setup>
 import ErpDataTable from '@/Components/Erp/ErpDataTable.vue';
+import ErpFormField from '@/Components/Erp/ErpFormField.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
@@ -24,10 +25,19 @@ const apply = () => router.get(route('dana.reports.costing'), localFilters);
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
         <ErpPageHeader title="Production costing report" />
 
-        <form class="erp-card mb-4 flex flex-wrap gap-2 p-4" @submit.prevent="apply">
-            <input v-model="localFilters.date_from" type="date" class="erp-input" />
-            <input v-model="localFilters.date_to" type="date" class="erp-input" />
-            <button type="submit" class="erp-btn-secondary">Apply</button>
+        <form class="erp-card mb-4 grid gap-3 p-4 sm:grid-cols-2" @submit.prevent="apply">
+            <p class="sm:col-span-2 text-xs text-erp-muted">Dates are optional — leave empty to include all posted batches.</p>
+            <ErpFormField label="From date" name="date_from" help="Optional reporting period start.">
+                <template #default="{ describedBy }">
+                    <input id="date_from" v-model="localFilters.date_from" type="date" class="erp-input w-full" :aria-describedby="describedBy" />
+                </template>
+            </ErpFormField>
+            <ErpFormField label="To date" name="date_to" help="Optional reporting period end.">
+                <template #default="{ describedBy }">
+                    <input id="date_to" v-model="localFilters.date_to" type="date" class="erp-input w-full" :aria-describedby="describedBy" />
+                </template>
+            </ErpFormField>
+            <button type="submit" class="erp-btn-secondary sm:col-span-2">Apply range</button>
         </form>
 
         <ErpDataTable

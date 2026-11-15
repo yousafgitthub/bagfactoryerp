@@ -40,7 +40,8 @@ class MasterDataController extends Controller
 
         $sort = $request->string('sort', 'code')->toString();
         $direction = $request->string('direction', 'asc')->toString() === 'desc' ? 'desc' : 'asc';
-        $allowedSort = collect($config['columns'])->pluck('key')->all();
+        $displayColumns = MasterDataRegistry::tableColumnsForIndex($config);
+        $allowedSort = collect($displayColumns)->pluck('key')->all();
 
         if (in_array($sort, $allowedSort, true)) {
             $query->orderBy($sort, $direction);
@@ -59,7 +60,7 @@ class MasterDataController extends Controller
             'breadcrumbs' => $this->breadcrumbs($resource, $config['label']),
             'resource' => $resource,
             'resourceLabel' => $config['label'],
-            'columns' => $config['columns'],
+            'columns' => MasterDataRegistry::tableColumnsForIndex($config),
             'rows' => $rows,
             'filters' => [
                 'search' => $search,

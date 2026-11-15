@@ -78,22 +78,20 @@ const activeKey = computed(() => {
     return bestKey;
 });
 
-const isCurrent = (name) => {
+const childLinkActive = (child) => {
     page.url;
 
-    if (!name || !route().has(name)) {
+    const target = pathname(child.href);
+
+    if (!target) {
         return false;
     }
 
-    if (route().current(name)) {
-        return true;
+    if (target === '/') {
+        return currentPath.value === '/';
     }
 
-    if (name.endsWith('.index')) {
-        return route().current(`${name.replace(/\.index$/, '')}.*`);
-    }
-
-    return false;
+    return currentPath.value === target || currentPath.value.startsWith(`${target}/`);
 };
 
 const itemActive = (item) => item.key === activeKey.value;
@@ -104,17 +102,11 @@ const toggleModule = (key) => {
     openModules.value = { ...openModules.value, [key]: !moduleOpen(key) };
 };
 
-const ensureOpenWhenActive = (key) => {
-    if (key === activeKey.value && childrenFor(key).length > 1) {
-        openModules.value = { ...openModules.value, [key]: true };
-    }
-};
-
 watch(
     activeKey,
     (key) => {
-        if (key) {
-            ensureOpenWhenActive(key);
+        if (key && childrenFor(key).length > 1) {
+            openModules.value = { ...openModules.value, [key]: true };
         }
     },
     { immediate: true },
@@ -136,8 +128,8 @@ const groupedNavigation = computed(() => {
 
 const linkClass = (active) =>
     active
-        ? 'bg-[#5468f5] text-white shadow-lg shadow-indigo-950/40'
-        : 'text-slate-200 hover:bg-white/10 hover:text-white';
+        ? 'bg-[#5468f5] text-white shadow-lg shadow-indigo-950/40 ring-2 ring-sky-300/40'
+        : 'text-slate-200 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300';
 </script>
 
 <template>
@@ -196,6 +188,7 @@ const linkClass = (active) =>
                                 class="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition"
                                 :class="linkClass(itemActive(item))"
                                 :aria-expanded="moduleOpen(item.key)"
+                                :aria-current="itemActive(item) ? 'true' : undefined"
                                 @click="toggleModule(item.key)"
                             >
                                 <ErpIcon :name="ERP_NAV_ICONS[item.key] || 'box'" class="h-5 w-5 shrink-0" />
@@ -209,10 +202,11 @@ const linkClass = (active) =>
                                     :href="child.href"
                                     class="block rounded-xl px-3 py-1.5 text-sm transition"
                                     :class="
-                                        isCurrent(child.routeName)
+                                        childLinkActive(child)
                                             ? 'bg-white/15 font-semibold text-white'
                                             : 'text-slate-300 hover:bg-white/10 hover:text-white'
                                     "
+                                    :aria-current="childLinkActive(child) ? 'page' : undefined"
                                     @click="$emit('close-mobile')"
                                 >
                                     {{ child.label }}
@@ -225,6 +219,8 @@ const linkClass = (active) =>
                             class="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition"
                             :class="linkClass(itemActive(item))"
                             :title="collapsed ? item.label : undefined"
+                            :aria-current="itemActive(item) ? 'page' : undefined"
+                            :aria-label="collapsed ? item.label : undefined"
                             @click="$emit('close-mobile')"
                         >
                             <ErpIcon :name="ERP_NAV_ICONS[item.key] || 'box'" class="h-5 w-5 shrink-0" />

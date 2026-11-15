@@ -115,4 +115,26 @@ class MasterDataRegistry
 
         return $data;
     }
+
+    /**
+     * User-facing table columns — omit internal numeric IDs when code or name is shown.
+     *
+     * @param  array<string, mixed>  $config
+     * @return list<array<string, mixed>>
+     */
+    public static function tableColumnsForIndex(array $config): array
+    {
+        $columns = $config['columns'] ?? [];
+        $keys = collect($columns)->pluck('key')->all();
+        $hasFriendlyKey = in_array('code', $keys, true) || in_array('name', $keys, true);
+
+        if (! $hasFriendlyKey) {
+            return $columns;
+        }
+
+        return array_values(array_filter(
+            $columns,
+            static fn (array $column): bool => ($column['key'] ?? '') !== 'id',
+        ));
+    }
 }

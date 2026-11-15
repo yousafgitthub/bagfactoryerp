@@ -1,4 +1,5 @@
 <script setup>
+import ErpEmptyState from '@/Components/Erp/ErpEmptyState.vue';
 import ErpModuleIntro from '@/Components/Erp/ErpModuleIntro.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpStatusBadge from '@/Components/Erp/ErpStatusBadge.vue';
@@ -70,7 +71,7 @@ defineProps({
 
         <div class="erp-card p-4">
             <h3 class="text-base font-semibold">Recent batches</h3>
-            <ul class="mt-3 divide-y divide-slate-100 dark:divide-slate-800">
+            <ul v-if="recentBatches?.length" class="mt-3 divide-y divide-slate-100 dark:divide-slate-800">
                 <li v-for="batch in recentBatches" :key="batch.id" class="flex items-center justify-between py-2 text-sm">
                     <Link :href="route('bag.batches.show', batch.id)" class="font-medium text-erp-primary hover:underline">
                         {{ batch.batch_number }}
@@ -80,8 +81,17 @@ defineProps({
                         <ErpStatusBadge :status="batch.status" />
                     </span>
                 </li>
-                <li v-if="!recentBatches?.length" class="py-4 text-sm text-erp-muted">No batches yet.</li>
             </ul>
+            <ErpEmptyState
+                v-else
+                class="mt-3 border-0 shadow-none"
+                title="No batches yet"
+                description="Record a production batch after releasing an order to track good pieces, rejects, and posting."
+            >
+                <template v-if="canManage" #actions>
+                    <Link :href="route('bag.batches.create')" class="erp-btn-primary text-sm">+ New batch</Link>
+                </template>
+            </ErpEmptyState>
         </div>
     </ErpLayout>
 </template>
