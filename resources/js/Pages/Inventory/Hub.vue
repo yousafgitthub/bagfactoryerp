@@ -1,4 +1,5 @@
 <script setup>
+import ErpModuleIntro from '@/Components/Erp/ErpModuleIntro.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
@@ -19,7 +20,7 @@ defineProps({
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
         <ErpPageHeader
             title="Inventory"
-            description="Materials, stock balances, and immutable movement ledger with draft vs posted control."
+            help-text="Track what you have on hand, record movements, and post changes so the ledger stays auditable."
         >
             <template #actions>
                 <Link
@@ -31,6 +32,15 @@ defineProps({
                 </Link>
             </template>
         </ErpPageHeader>
+
+        <ErpModuleIntro
+            title="Typical flow"
+            :steps="[
+                'Maintain materials and reorder levels.',
+                'Post goods receipts from purchases or production into stock.',
+                'Use the stock ledger to trace any balance back to its source document.',
+            ]"
+        />
 
         <div v-if="lowStockCount" class="erp-card mb-4 border-l-4 border-amber-400 p-4">
             <p class="text-sm font-medium text-amber-900 dark:text-amber-100">

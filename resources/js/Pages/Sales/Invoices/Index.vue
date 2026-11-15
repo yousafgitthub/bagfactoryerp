@@ -10,7 +10,10 @@ defineProps({ pageTitle: String, breadcrumbs: Array, invoices: Object, canManage
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Sales invoices">
+        <ErpPageHeader
+            title="Sales invoices"
+            help-text="Draft invoices can be edited; posting deducts finished-goods stock and locks the customer balance."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('sales.invoices.create')" class="erp-btn-primary">+ Invoice</Link>
             </template>

@@ -328,7 +328,9 @@ const listEmpty = (fallback) => (needle.value ? 'No matches in this list.' : fal
                 <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">
                     Welcome back, <span class="text-[#3154d6] dark:text-indigo-300">{{ userName }}</span>!
                 </h2>
-                <p class="mt-2 text-sm text-erp-muted">Here's what's happening with your Bag Factory today.</p>
+                <p class="mt-2 text-sm text-erp-muted">
+                    Today's production, stock, sales, and alerts — use the period filters below to compare weeks or months.
+                </p>
                 <div class="mt-3 h-1 w-16 rounded-full bg-[#5468f5]" />
             </div>
 

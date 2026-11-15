@@ -1,4 +1,5 @@
 <script setup>
+import ErpModuleIntro from '@/Components/Erp/ErpModuleIntro.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpStatusBadge from '@/Components/Erp/ErpStatusBadge.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
@@ -20,7 +21,7 @@ defineProps({
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
         <ErpPageHeader
             title="Dana production"
-            description="Convert raw plastic and colors into finished Dana with controlled posting to inventory."
+            help-text="Mix raw materials into colored Dana, move the batch through approvals, then post so stock increases at the output warehouse."
         >
             <template #actions>
                 <Link v-if="canManage" :href="route('dana.batches.create')" class="erp-btn-primary">
@@ -28,6 +29,15 @@ defineProps({
                 </Link>
             </template>
         </ErpPageHeader>
+
+        <ErpModuleIntro
+            title="Batch workflow"
+            :steps="[
+                'Create a draft batch and enter consumption, output, and wastage.',
+                'Submit and approve, then mark production in progress and completed.',
+                'Post to inventory — raw materials decrease and finished Dana is received.',
+            ]"
+        />
 
         <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="erp-card p-4">

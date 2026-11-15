@@ -2,6 +2,12 @@
 import { computed, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import ErpIcon from '@/Components/Erp/ErpIcon.vue';
+import {
+    ERP_MODULE_SECTION,
+    ERP_NAV_ICONS,
+    ERP_NAV_SECTIONS,
+    navChildrenFor,
+} from '@/support/erpNavStructure';
 
 const props = defineProps({
     navigation: {
@@ -19,46 +25,10 @@ const props = defineProps({
 defineEmits(['toggle-collapsed', 'close-mobile']);
 
 const page = usePage();
-const inventoryOpen = ref(false);
-
-const icons = {
-    dashboard: 'home',
-    inventory: 'box',
-    'dana-production': 'gear',
-    'shopping-bag-production': 'bag',
-    'machines-halls': 'factory',
-    employees: 'users',
-    attendance: 'clock',
-    payroll: 'wallet',
-    purchases: 'cart',
-    suppliers: 'truck',
-    sales: 'trend',
-    customers: 'users',
-    expenses: 'receipt',
-    accounting: 'building',
-    reports: 'chart',
-    website: 'globe',
-    settings: 'settings',
-};
+const openModules = ref({});
 
 const brandTitle = computed(() => props.appName.replace(/\s*ERP\s*$/i, '').trim() || props.appName);
 const brandMark = computed(() => (/ERP/i.test(props.appName) ? 'ERP' : ''));
-
-const inventoryLinks = computed(() => {
-    const links = [
-        { label: 'Overview', routeName: 'erp.inventory' },
-        { label: 'Materials', routeName: 'inventory.materials.index' },
-        { label: 'Stock', routeName: 'inventory.balances.index' },
-        { label: 'Ledger', routeName: 'inventory.ledger.index' },
-    ];
-
-    return links
-        .filter((link) => route().has(link.routeName))
-        .map((link) => ({
-            ...link,
-            href: route(link.routeName),
-        }));
-});
 
 const pathname = (value) => {
     const raw = String(value ?? '').trim();
@@ -75,24 +45,33 @@ const pathname = (value) => {
 
 const currentPath = computed(() => pathname(page.url));
 
+const childrenFor = (moduleKey) => navChildrenFor(moduleKey);
+
+const moduleTargets = (item) => {
+    const paths = [pathname(item.href)];
+
+    for (const child of childrenFor(item.key)) {
+        paths.push(pathname(child.href));
+    }
+
+    return paths.filter(Boolean);
+};
+
 const activeKey = computed(() => {
     let bestKey = null;
     let bestLength = -1;
 
     for (const item of props.navigation) {
-        const target = pathname(item.href);
+        for (const target of moduleTargets(item)) {
+            const matches =
+                target === '/'
+                    ? currentPath.value === '/'
+                    : currentPath.value === target || currentPath.value.startsWith(`${target}/`);
 
-        if (!target) {
-            continue;
-        }
-
-        const matches = target === '/'
-            ? currentPath.value === '/'
-            : currentPath.value === target || currentPath.value.startsWith(`${target}/`);
-
-        if (matches && target.length > bestLength) {
-            bestKey = item.key;
-            bestLength = target.length;
+            if (matches && target.length > bestLength) {
+                bestKey = item.key;
+                bestLength = target.length;
+            }
         }
     }
 
@@ -119,21 +98,41 @@ const isCurrent = (name) => {
 
 const itemActive = (item) => item.key === activeKey.value;
 
-const inventoryActive = computed(() => {
-    page.url;
+const moduleOpen = (key) => openModules.value[key] === true;
 
-    return route().current('erp.inventory') || route().current('inventory.*');
-});
+const toggleModule = (key) => {
+    openModules.value = { ...openModules.value, [key]: !moduleOpen(key) };
+};
+
+const ensureOpenWhenActive = (key) => {
+    if (key === activeKey.value && childrenFor(key).length > 1) {
+        openModules.value = { ...openModules.value, [key]: true };
+    }
+};
 
 watch(
-    inventoryActive,
-    (active) => {
-        if (active) {
-            inventoryOpen.value = true;
+    activeKey,
+    (key) => {
+        if (key) {
+            ensureOpenWhenActive(key);
         }
     },
     { immediate: true },
 );
+
+const groupedNavigation = computed(() => {
+    const buckets = Object.fromEntries(ERP_NAV_SECTIONS.map((section) => [section.key, []]));
+
+    for (const item of props.navigation) {
+        const sectionKey = ERP_MODULE_SECTION[item.key] ?? 'operations';
+        buckets[sectionKey]?.push(item);
+    }
+
+    return ERP_NAV_SECTIONS.map((section) => ({
+        ...section,
+        items: buckets[section.key] ?? [],
+    })).filter((section) => section.items.length > 0);
+});
 
 const linkClass = (active) =>
     active
@@ -181,43 +180,58 @@ const linkClass = (active) =>
             </button>
         </div>
 
-        <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-2">
-            <template v-for="item in navigation" :key="item.key">
-                <div v-if="item.key === 'inventory' && !collapsed">
-                    <button
-                        type="button"
-                        class="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition"
-                        :class="linkClass(itemActive(item))"
-                        :aria-expanded="inventoryOpen"
-                        @click="inventoryOpen = !inventoryOpen"
-                    >
-                        <ErpIcon :name="icons.inventory" class="h-5 w-5 shrink-0" />
-                        <span class="flex-1 truncate text-left">{{ item.label }}</span>
-                        <ErpIcon name="chevron" class="h-4 w-4 shrink-0 transition" :class="inventoryOpen ? 'rotate-90' : ''" />
-                    </button>
-                    <div v-show="inventoryOpen" class="ml-5 mt-1 space-y-1 border-l border-white/15 py-1 pl-3">
+        <nav class="flex-1 overflow-y-auto px-3 py-2">
+            <template v-for="section in groupedNavigation" :key="section.key">
+                <p
+                    v-if="section.label && !collapsed"
+                    class="mb-1 mt-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-200/70 first:mt-0"
+                >
+                    {{ section.label }}
+                </p>
+                <div class="space-y-1">
+                    <template v-for="item in section.items" :key="item.key">
+                        <div v-if="childrenFor(item.key).length > 1 && !collapsed">
+                            <button
+                                type="button"
+                                class="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition"
+                                :class="linkClass(itemActive(item))"
+                                :aria-expanded="moduleOpen(item.key)"
+                                @click="toggleModule(item.key)"
+                            >
+                                <ErpIcon :name="ERP_NAV_ICONS[item.key] || 'box'" class="h-5 w-5 shrink-0" />
+                                <span class="flex-1 truncate text-left">{{ item.label }}</span>
+                                <ErpIcon name="chevron" class="h-4 w-4 shrink-0 transition" :class="moduleOpen(item.key) ? 'rotate-90' : ''" />
+                            </button>
+                            <div v-show="moduleOpen(item.key)" class="ml-5 mt-1 space-y-1 border-l border-white/15 py-1 pl-3">
+                                <Link
+                                    v-for="child in childrenFor(item.key)"
+                                    :key="child.routeName"
+                                    :href="child.href"
+                                    class="block rounded-xl px-3 py-1.5 text-sm transition"
+                                    :class="
+                                        isCurrent(child.routeName)
+                                            ? 'bg-white/15 font-semibold text-white'
+                                            : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                                    "
+                                    @click="$emit('close-mobile')"
+                                >
+                                    {{ child.label }}
+                                </Link>
+                            </div>
+                        </div>
                         <Link
-                            v-for="child in inventoryLinks"
-                            :key="child.routeName"
-                            :href="child.href"
-                            class="block rounded-xl px-3 py-1.5 text-sm transition"
-                            :class="isCurrent(child.routeName) ? 'bg-white/15 font-semibold text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'"
+                            v-else
+                            :href="item.href"
+                            class="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition"
+                            :class="linkClass(itemActive(item))"
+                            :title="collapsed ? item.label : undefined"
                             @click="$emit('close-mobile')"
                         >
-                            {{ child.label }}
+                            <ErpIcon :name="ERP_NAV_ICONS[item.key] || 'box'" class="h-5 w-5 shrink-0" />
+                            <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
                         </Link>
-                    </div>
+                    </template>
                 </div>
-                <Link
-                    v-else
-                    :href="item.href"
-                    class="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition"
-                    :class="linkClass(itemActive(item))"
-                    @click="$emit('close-mobile')"
-                >
-                    <ErpIcon :name="icons[item.key] || 'box'" class="h-5 w-5 shrink-0" />
-                    <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
-                </Link>
             </template>
         </nav>
 

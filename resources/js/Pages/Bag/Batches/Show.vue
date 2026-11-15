@@ -1,5 +1,6 @@
 <script setup>
 import ErpDataTable from '@/Components/Erp/ErpDataTable.vue';
+import ErpModuleIntro from '@/Components/Erp/ErpModuleIntro.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpStatusBadge from '@/Components/Erp/ErpStatusBadge.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
@@ -47,6 +48,12 @@ const actionLabel = (action) =>
                 <button v-for="action in allowedActions" :key="action" type="button" class="erp-btn-secondary" @click="workflow(action)">{{ actionLabel(action) }}</button>
             </template>
         </ErpPageHeader>
+
+        <ErpModuleIntro
+            v-if="batch.status !== 'posted'"
+            title="Next steps"
+            help-text="Advance the batch through shop-floor steps, then post to consume Dana or materials and receive finished bags."
+        />
 
         <div class="erp-card mb-4 grid gap-2 p-4 text-sm sm:grid-cols-4">
             <div>Status: <ErpStatusBadge :status="batch.status" /></div>

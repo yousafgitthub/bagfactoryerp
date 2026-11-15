@@ -60,6 +60,8 @@ class HandleInertiaRequests extends Middleware
             'navigation' => $user ? ErpNavigation::forUser($user) : [],
             'flash' => [
                 'status' => fn () => $request->session()->get('status'),
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
             ],
             'appName' => config('app.name'),
             'notifications' => [],

@@ -11,7 +11,10 @@ defineProps({ pageTitle: String, breadcrumbs: Array, orders: Object, canManage: 
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Purchase orders">
+        <ErpPageHeader
+            title="Purchase orders"
+            help-text="Confirmed orders are required before goods receipts. Stock still posts only on GRN."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('purchases.orders.create')" class="erp-btn-primary">+ PO</Link>
             </template>

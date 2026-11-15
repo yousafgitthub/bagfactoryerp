@@ -16,7 +16,7 @@ defineProps({
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Current stock" description="Weighted average valuation per warehouse." />
+        <ErpPageHeader title="Current stock" help-text="On-hand quantity and average cost per warehouse — open the ledger for the audit trail behind a balance." />
 
         <div v-if="lowStock.length" class="erp-card mb-4 p-4">
             <h3 class="font-semibold text-amber-800 dark:text-amber-200">Low stock warnings</h3>

@@ -1,4 +1,5 @@
 <script setup>
+import ErpModuleIntro from '@/Components/Erp/ErpModuleIntro.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpStatusBadge from '@/Components/Erp/ErpStatusBadge.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
@@ -20,12 +21,21 @@ defineProps({
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
         <ErpPageHeader
             title="Shopping bag production"
-            description="Convert Dana and materials into saleable bags with rejected-stock separation and versioned BOMs."
+            help-text="Release a production order, run batches on machines, separate good and rejected pieces, then post finished bags to inventory."
         >
             <template #actions>
                 <Link v-if="canManage" :href="route('bag.orders.create')" class="erp-btn-primary">+ New order</Link>
             </template>
         </ErpPageHeader>
+
+        <ErpModuleIntro
+            title="Bag production steps"
+            :steps="[
+                'Define products, variants, and the active bill of materials (BOM).',
+                'Create a production order when the factory should make quantity.',
+                'Record batch output and post — Dana and additives are consumed, saleable bags increase stock.',
+            ]"
+        />
 
         <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="erp-card p-4">

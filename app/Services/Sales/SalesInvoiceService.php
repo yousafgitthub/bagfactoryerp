@@ -235,7 +235,9 @@ class SalesInvoiceService
             $canOversell = config('sales.allow_oversell') && $actor->can('sales.oversell');
 
             if (! $canOversell) {
-                throw new SalesException("Insufficient finished stock for material #{$line->material_id} (need {$required}, have {$available}).");
+                $line->loadMissing('material:id,name');
+                $name = $line->material?->name ?? 'this product';
+                throw new SalesException("Not enough finished stock for {$name} (need {$required}, on hand {$available}).");
             }
         }
     }

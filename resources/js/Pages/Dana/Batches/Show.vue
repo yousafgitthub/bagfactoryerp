@@ -1,5 +1,6 @@
 <script setup>
 import ErpDataTable from '@/Components/Erp/ErpDataTable.vue';
+import ErpModuleIntro from '@/Components/Erp/ErpModuleIntro.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpStatusBadge from '@/Components/Erp/ErpStatusBadge.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
@@ -72,6 +73,12 @@ const actionLabel = (action) =>
                 </button>
             </template>
         </ErpPageHeader>
+
+        <ErpModuleIntro
+            v-if="batch.status !== 'posted'"
+            title="Next steps"
+            help-text="Use the actions above to submit, approve, run production, and complete the batch. Posting is available once status is Completed."
+        />
 
         <div class="erp-card mb-4 grid gap-2 p-4 text-sm sm:grid-cols-4">
             <div>Status: <ErpStatusBadge :status="batch.status" /></div>

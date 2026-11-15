@@ -61,7 +61,7 @@ class DashboardDataService
                 'key' => 'raw_material_stock',
                 'label' => 'Raw material stock',
                 'value' => (float) ($balances['raw'] ?? 0),
-                'hint' => 'Unposted ledger balances when configured',
+                'hint' => 'Granules, additives, and packaging on hand',
             ],
             [
                 'key' => 'dana_stock_kg',

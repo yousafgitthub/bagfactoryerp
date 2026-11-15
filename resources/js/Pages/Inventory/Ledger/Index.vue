@@ -15,7 +15,7 @@ defineProps({
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Movement history" description="Immutable stock ledger entries." />
+        <ErpPageHeader title="Movement history" help-text="Every posted movement is listed here with its source document — balances should reconcile to these totals." />
 
         <div class="erp-card p-4">
             <ErpDataTable

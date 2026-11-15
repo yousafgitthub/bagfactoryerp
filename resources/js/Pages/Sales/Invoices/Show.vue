@@ -17,7 +17,10 @@ const postInvoice = () => {
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader :title="invoice.invoice_number">
+        <ErpPageHeader
+            :title="invoice.invoice_number"
+            help-text="Review lines and totals while the invoice is draft. Posting is final for stock and accounts receivable."
+        >
             <template #actions>
                 <Link :href="printUrl" class="erp-btn-secondary mr-2" target="_blank" rel="noopener">Print Invoice</Link>
                 <ErpStatusBadge :status="invoice.status" class="mr-2" />

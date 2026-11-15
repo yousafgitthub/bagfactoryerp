@@ -41,7 +41,10 @@ const submit = () => form.post(route('sales.invoices.store'));
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader :title="pageTitle" />
+        <ErpPageHeader
+            :title="pageTitle"
+            help-text="Save as draft first. Posting checks finished-bag stock in the selected warehouse."
+        />
         <form class="erp-card space-y-4 p-6" @submit.prevent="submit">
             <div class="grid gap-4 sm:grid-cols-3">
                 <div>

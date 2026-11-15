@@ -1,4 +1,5 @@
 <script setup>
+import ErpModuleIntro from '@/Components/Erp/ErpModuleIntro.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
@@ -16,11 +17,20 @@ defineProps({
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Purchases" description="Purchase orders through payments — stock increases on posted GRN only.">
+        <ErpPageHeader title="Purchases" help-text="Order from suppliers, receive goods on a GRN to increase stock, match supplier bills, and pay outstanding invoices.">
             <template #actions>
                 <Link v-if="canManage" :href="route('purchases.orders.create')" class="erp-btn-primary">+ Purchase order</Link>
             </template>
         </ErpPageHeader>
+
+        <ErpModuleIntro
+            title="Purchase flow"
+            :steps="[
+                'Raise and confirm a purchase order with the supplier.',
+                'Post a goods receipt (GRN) when material arrives — stock increases here, not on the invoice.',
+                'Record the supplier invoice and allocate payments against posted bills.',
+            ]"
+        />
 
         <p class="mb-4 text-sm text-erp-muted">
             Stock recognition: <strong>{{ stockPolicy === 'goods_receipt' ? 'Goods receipt (GRN)' : stockPolicy }}</strong>.

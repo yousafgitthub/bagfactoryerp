@@ -22,7 +22,7 @@ const applyFilters = (patch) => {
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Materials" description="Raw materials linked to categories, units, and reorder levels.">
+        <ErpPageHeader title="Materials" help-text="Each material has a code, unit, bucket (raw, Dana, or finished bag), and optional reorder alert.">
             <template #actions>
                 <Link v-if="canManage" :href="route('inventory.materials.create')" class="erp-btn-primary">+ New</Link>
             </template>

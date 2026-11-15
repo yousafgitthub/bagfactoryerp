@@ -25,7 +25,10 @@ const applyFilters = () => router.get(route('bag.batches.index'), localFilters, 
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Bag batches">
+        <ErpPageHeader
+            title="Bag production batches"
+            help-text="Each batch records machine output, consumption from the BOM, and good vs rejected quantities before posting."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('bag.batches.create')" class="erp-btn-primary">+ New batch</Link>
             </template>

@@ -28,7 +28,10 @@ const applyFilters = () => {
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Dana batches">
+        <ErpPageHeader
+            title="Dana batches"
+            help-text="Filter by status or machine. Open a batch to advance workflow steps or post to inventory."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('dana.batches.create')" class="erp-btn-primary">+ New batch</Link>
             </template>
