@@ -59,6 +59,8 @@ use App\Http\Controllers\Sales\SalesInvoiceController;
 use App\Http\Controllers\Sales\SalesOrderController;
 use App\Http\Controllers\Sales\SalesReportController;
 use App\Http\Controllers\Sales\SalesReturnController;
+use App\Http\Controllers\Reports\ErpReportController;
+use App\Http\Controllers\Reports\ReportsHubController;
 use App\Http\Controllers\SettingsHubController;
 use Illuminate\Support\Facades\Route;
 
@@ -597,11 +599,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('accounting.reports.ledger');
     });
 
-    Route::get('/reports', function (\Illuminate\Http\Request $request) {
-        return app(ModuleController::class)($request, 'reports');
-    })
-        ->middleware('permission:reports.view')
-        ->name('erp.reports');
+    Route::middleware('permission:reports.view')->prefix('reports')->group(function () {
+        Route::get('/', ReportsHubController::class)->name('erp.reports');
+        Route::get('/analytics/{reportKey}', [ErpReportController::class, 'show'])
+            ->where('reportKey', '[a-z0-9\-]+')
+            ->name('erp.reports.show');
+        Route::get('/analytics/{reportKey}/export/{format}', [ErpReportController::class, 'export'])
+            ->where(['reportKey' => '[a-z0-9\-]+', 'format' => 'csv|print|pdf'])
+            ->name('erp.reports.export');
+    });
 });
 
 Route::middleware('auth')->group(function () {
