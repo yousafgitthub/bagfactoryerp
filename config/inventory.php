@@ -16,6 +16,7 @@ return [
         'warehouse_transfer' => 'Warehouse transfer',
         'waste_receipt' => 'Waste stock receipt',
         'production_receipt' => 'Production output receipt',
+        'purchase_return' => 'Purchase return to supplier',
         'reversal' => 'Reversal',
     ],
 

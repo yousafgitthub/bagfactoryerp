@@ -319,7 +319,7 @@ class InventoryPostingService
     private function signedQuantityForType(string $type, float $quantity): float
     {
         return match ($type) {
-            'issue_to_production' => -abs($quantity),
+            'issue_to_production', 'purchase_return' => -abs($quantity),
             'opening_stock', 'purchase_receipt', 'return_unused', 'waste_receipt', 'production_receipt' => abs($quantity),
             default => $quantity,
         };
@@ -328,7 +328,7 @@ class InventoryPostingService
     private function movementTypeFor(string $type, float $signedQty): string
     {
         return match ($type) {
-            'issue_to_production' => 'issue',
+            'issue_to_production', 'purchase_return' => 'issue',
             'opening_stock' => 'opening',
             'purchase_receipt' => 'receipt',
             'return_unused' => 'return',

@@ -38,5 +38,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('managePayroll', fn (User $user) => $policy->managePayroll($user));
         Gate::define('approvePayroll', fn (User $user) => $policy->approvePayroll($user));
         Gate::define('approveFinancialStatements', fn (User $user) => $policy->approveFinancialStatements($user));
+        Gate::define('managePurchases', fn (User $user) => $policy->managePurchases($user));
+        Gate::define('manageSuppliers', fn (User $user) => $policy->manageSuppliers($user));
     }
 }

@@ -34,6 +34,15 @@ use App\Http\Controllers\MachinesHallsHubController;
 use App\Http\Controllers\MasterData\MasterDataController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Purchases\GoodsReceiptController;
+use App\Http\Controllers\Purchases\PurchaseHubController;
+use App\Http\Controllers\Purchases\PurchaseInvoiceController;
+use App\Http\Controllers\Purchases\PurchaseOrderController;
+use App\Http\Controllers\Purchases\PurchaseReportController;
+use App\Http\Controllers\Purchases\PurchaseReturnController;
+use App\Http\Controllers\Purchases\SupplierController;
+use App\Http\Controllers\Purchases\SupplierHubController;
+use App\Http\Controllers\Purchases\SupplierPaymentController;
 use App\Http\Controllers\SettingsHubController;
 use Illuminate\Support\Facades\Route;
 
@@ -358,9 +367,95 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('hr.payroll.reports.outstanding');
     });
 
+    Route::middleware('permission:purchases.view')->prefix('purchases')->group(function () {
+        Route::get('/', PurchaseHubController::class)->name('erp.purchases');
+
+        Route::get('/orders', [PurchaseOrderController::class, 'index'])->name('purchases.orders.index');
+        Route::get('/orders/create', [PurchaseOrderController::class, 'create'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.orders.create');
+        Route::post('/orders', [PurchaseOrderController::class, 'store'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.orders.store');
+        Route::get('/orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('purchases.orders.show');
+        Route::get('/orders/{purchaseOrder}/edit', [PurchaseOrderController::class, 'edit'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.orders.edit');
+        Route::put('/orders/{purchaseOrder}', [PurchaseOrderController::class, 'update'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.orders.update');
+        Route::post('/orders/{purchaseOrder}/confirm', [PurchaseOrderController::class, 'confirm'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.orders.confirm');
+        Route::post('/orders/{purchaseOrder}/goods-receipts', [PurchaseOrderController::class, 'storeGoodsReceipt'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.orders.goods-receipts.store');
+
+        Route::get('/goods-receipts', [GoodsReceiptController::class, 'index'])->name('purchases.goods-receipts.index');
+        Route::get('/goods-receipts/{goodsReceipt}', [GoodsReceiptController::class, 'show'])->name('purchases.goods-receipts.show');
+        Route::post('/goods-receipts/{goodsReceipt}/post', [GoodsReceiptController::class, 'post'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.goods-receipts.post');
+
+        Route::get('/invoices', [PurchaseInvoiceController::class, 'index'])->name('purchases.invoices.index');
+        Route::get('/invoices/create', [PurchaseInvoiceController::class, 'create'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.invoices.create');
+        Route::post('/invoices', [PurchaseInvoiceController::class, 'store'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.invoices.store');
+        Route::get('/invoices/{purchaseInvoice}', [PurchaseInvoiceController::class, 'show'])->name('purchases.invoices.show');
+        Route::post('/invoices/{purchaseInvoice}/post', [PurchaseInvoiceController::class, 'post'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.invoices.post');
+        Route::post('/orders/{purchaseOrder}/invoices', [PurchaseInvoiceController::class, 'createFromOrder'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.orders.invoices.store');
+
+        Route::get('/payments', [SupplierPaymentController::class, 'index'])->name('purchases.payments.index');
+        Route::get('/payments/create', [SupplierPaymentController::class, 'create'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.payments.create');
+        Route::post('/payments', [SupplierPaymentController::class, 'store'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.payments.store');
+
+        Route::get('/returns', [PurchaseReturnController::class, 'index'])->name('purchases.returns.index');
+        Route::get('/returns/create', [PurchaseReturnController::class, 'create'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.returns.create');
+        Route::post('/returns', [PurchaseReturnController::class, 'store'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.returns.store');
+        Route::get('/returns/{purchaseReturn}', [PurchaseReturnController::class, 'show'])->name('purchases.returns.show');
+        Route::post('/returns/{purchaseReturn}/post', [PurchaseReturnController::class, 'post'])
+            ->middleware('permission:purchases.manage')
+            ->name('purchases.returns.post');
+
+        Route::get('/reports/outstanding', [PurchaseReportController::class, 'outstanding'])
+            ->name('purchases.reports.outstanding');
+    });
+
+    Route::middleware('permission:suppliers.view')->prefix('suppliers')->group(function () {
+        Route::get('/', SupplierHubController::class)->name('erp.suppliers');
+
+        Route::get('/list', [SupplierController::class, 'index'])->name('purchases.suppliers.index');
+        Route::get('/create', [SupplierController::class, 'create'])
+            ->middleware('permission:suppliers.manage')
+            ->name('purchases.suppliers.create');
+        Route::post('/', [SupplierController::class, 'store'])
+            ->middleware('permission:suppliers.manage')
+            ->name('purchases.suppliers.store');
+        Route::get('/{supplier}', [SupplierController::class, 'show'])->name('purchases.suppliers.show');
+        Route::get('/{supplier}/edit', [SupplierController::class, 'edit'])
+            ->middleware('permission:suppliers.manage')
+            ->name('purchases.suppliers.edit');
+        Route::put('/{supplier}', [SupplierController::class, 'update'])
+            ->middleware('permission:suppliers.manage')
+            ->name('purchases.suppliers.update');
+    });
+
     $moduleRoutes = [
-        'purchases' => 'erp.purchases',
-        'suppliers' => 'erp.suppliers',
         'sales' => 'erp.sales',
         'customers' => 'erp.customers',
         'expenses' => 'erp.expenses',

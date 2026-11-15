@@ -72,4 +72,14 @@ class ErpAccessPolicy
     {
         return $user->can('accounting.approve-financial-statements');
     }
+
+    public function managePurchases(User $user): bool
+    {
+        return $user->can('purchases.manage');
+    }
+
+    public function manageSuppliers(User $user): bool
+    {
+        return $user->can('suppliers.manage');
+    }
 }

@@ -12,6 +12,7 @@ class InventoryTransactionNumberGenerator
         $prefix = match ($type) {
             'opening_stock' => 'OS',
             'purchase_receipt' => 'GR',
+            'purchase_return' => 'PRT',
             'issue_to_production' => 'IS',
             'return_unused' => 'RT',
             'adjustment' => 'ADJ',
