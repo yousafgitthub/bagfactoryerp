@@ -38,6 +38,11 @@ class InventoryLedgerEntry extends Model
         return $this->belongsTo(InventoryTransaction::class, 'inventory_transaction_id');
     }
 
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
     public function material(): BelongsTo
     {
         return $this->belongsTo(Material::class);

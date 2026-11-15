@@ -60,6 +60,45 @@ const inventoryLinks = computed(() => {
         }));
 });
 
+const pathname = (value) => {
+    const raw = String(value ?? '').trim();
+
+    if (!raw) {
+        return '';
+    }
+
+    const withoutOrigin = raw.split('#')[0].replace(/^[a-z][a-z0-9+.-]*:\/\/[^/?#]+/i, '');
+    const path = withoutOrigin.split('?')[0].replace(/\/+$/, '');
+
+    return path || '/';
+};
+
+const currentPath = computed(() => pathname(page.url));
+
+const activeKey = computed(() => {
+    let bestKey = null;
+    let bestLength = -1;
+
+    for (const item of props.navigation) {
+        const target = pathname(item.href);
+
+        if (!target) {
+            continue;
+        }
+
+        const matches = target === '/'
+            ? currentPath.value === '/'
+            : currentPath.value === target || currentPath.value.startsWith(`${target}/`);
+
+        if (matches && target.length > bestLength) {
+            bestKey = item.key;
+            bestLength = target.length;
+        }
+    }
+
+    return bestKey;
+});
+
 const isCurrent = (name) => {
     page.url;
 
@@ -78,7 +117,7 @@ const isCurrent = (name) => {
     return false;
 };
 
-const itemActive = (item) => isCurrent(item.route);
+const itemActive = (item) => item.key === activeKey.value;
 
 const inventoryActive = computed(() => {
     page.url;
@@ -173,7 +212,7 @@ const linkClass = (active) =>
                     v-else
                     :href="item.href"
                     class="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition"
-                    :class="linkClass(item.key === 'inventory' ? inventoryActive : itemActive(item))"
+                    :class="linkClass(itemActive(item))"
                     @click="$emit('close-mobile')"
                 >
                     <ErpIcon :name="icons[item.key] || 'box'" class="h-5 w-5 shrink-0" />
