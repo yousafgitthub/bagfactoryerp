@@ -59,4 +59,9 @@ class SalesInvoiceLine extends Model
     {
         return $this->belongsTo(Material::class);
     }
+
+    public function unitOfMeasurement(): BelongsTo
+    {
+        return $this->belongsTo(UnitOfMeasurement::class);
+    }
 }

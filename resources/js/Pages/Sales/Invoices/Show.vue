@@ -19,7 +19,7 @@ const postInvoice = () => {
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
         <ErpPageHeader :title="invoice.invoice_number">
             <template #actions>
-                <Link :href="printUrl" class="erp-btn-secondary mr-2" target="_blank">Print</Link>
+                <Link :href="printUrl" class="erp-btn-secondary mr-2" target="_blank" rel="noopener">Print Invoice</Link>
                 <ErpStatusBadge :status="invoice.status" class="mr-2" />
                 <button v-if="canManage && invoice.status === 'draft'" type="button" class="erp-btn-primary" @click="postInvoice">Post</button>
             </template>

@@ -10,6 +10,7 @@ use App\Models\SalesInvoice;
 use App\Models\SalesOrder;
 use App\Models\UnitOfMeasurement;
 use App\Models\Warehouse;
+use App\Models\WebsiteSetting;
 use App\Services\Sales\SalesInvoiceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -108,12 +109,22 @@ class SalesInvoiceController extends Controller
     {
         $this->authorize('viewModule', 'sales');
 
-        $salesInvoice->load(['customer', 'lines.material', 'lines.bagProduct', 'warehouse']);
+        $salesInvoice->load([
+            'customer',
+            'warehouse',
+            'lines.material',
+            'lines.bagProduct',
+            'lines.bagProductVariant',
+            'lines.unitOfMeasurement',
+        ]);
 
         return Inertia::render('Sales/Invoices/Print', [
             'pageTitle' => 'Print '.$salesInvoice->invoice_number,
             'invoice' => $salesInvoice,
-            'company' => config('sales.company'),
+            'company' => $this->companyForPrint(),
+            'outstanding' => $salesInvoice->outstandingAmount(),
+            'statusLabel' => config('sales.invoice_statuses.'.$salesInvoice->status, $salesInvoice->status),
+            'saleTypeLabel' => config('sales.sale_types.'.$salesInvoice->sale_type, $salesInvoice->sale_type),
         ]);
     }
 
@@ -129,6 +140,22 @@ class SalesInvoiceController extends Controller
         $this->invoices->post($salesInvoice, $request->user(), $cash);
 
         return back()->with('success', 'Invoice posted — stock deducted and receivable recorded.');
+    }
+
+    /** @return array<string, string|null> */
+    private function companyForPrint(): array
+    {
+        $settings = WebsiteSetting::current();
+        $fallback = config('sales.company');
+
+        return [
+            'name' => $settings->company_name ?: ($fallback['name'] ?? null),
+            'address' => $settings->address ?: ($fallback['address'] ?? null),
+            'phone' => $settings->phone ?: ($fallback['phone'] ?? null),
+            'email' => $settings->email,
+            'logo_url' => null,
+            'tax_registration' => null,
+        ];
     }
 
     /** @return list<array{label: string, href?: string}> */

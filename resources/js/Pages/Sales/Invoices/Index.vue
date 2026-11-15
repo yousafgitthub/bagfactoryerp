@@ -16,6 +16,7 @@ defineProps({ pageTitle: String, breadcrumbs: Array, invoices: Object, canManage
             </template>
         </ErpPageHeader>
         <ErpDataTable
+            row-actions
             :columns="[
                 { key: 'number', label: 'Invoice' },
                 { key: 'customer', label: 'Customer' },
@@ -33,9 +34,21 @@ defineProps({ pageTitle: String, breadcrumbs: Array, invoices: Object, canManage
                     status: i.status,
                 }))
             "
+            :pagination-links="invoices.links ?? []"
+            :pagination-meta="invoices.meta ?? null"
         >
             <template #cell-number="{ row }">
                 <Link :href="route('sales.invoices.show', row.id)" class="erp-link">{{ row.number }}</Link>
+            </template>
+            <template #row-actions="{ row }">
+                <Link
+                    :href="route('sales.invoices.print', row.id)"
+                    class="erp-btn-secondary text-xs"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    Print
+                </Link>
             </template>
         </ErpDataTable>
     </ErpLayout>
