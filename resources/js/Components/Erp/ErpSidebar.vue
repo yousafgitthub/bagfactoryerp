@@ -1,7 +1,9 @@
 <script setup>
+import { computed, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import ErpIcon from '@/Components/Erp/ErpIcon.vue';
 
-defineProps({
+const props = defineProps({
     navigation: {
         type: Array,
         default: () => [],
@@ -17,32 +19,109 @@ defineProps({
 defineEmits(['toggle-collapsed', 'close-mobile']);
 
 const page = usePage();
+const inventoryOpen = ref(false);
 
-const isActive = (item) => {
-    if (!item.route) {
+const icons = {
+    dashboard: 'home',
+    inventory: 'box',
+    'dana-production': 'gear',
+    'shopping-bag-production': 'bag',
+    'machines-halls': 'factory',
+    employees: 'users',
+    attendance: 'clock',
+    payroll: 'wallet',
+    purchases: 'cart',
+    suppliers: 'truck',
+    sales: 'trend',
+    customers: 'users',
+    expenses: 'receipt',
+    accounting: 'building',
+    reports: 'chart',
+    settings: 'settings',
+};
+
+const brandTitle = computed(() => props.appName.replace(/\s*ERP\s*$/i, '').trim() || props.appName);
+const brandMark = computed(() => (/ERP/i.test(props.appName) ? 'ERP' : ''));
+
+const inventoryLinks = computed(() => {
+    const links = [
+        { label: 'Overview', routeName: 'erp.inventory' },
+        { label: 'Materials', routeName: 'inventory.materials.index' },
+        { label: 'Stock', routeName: 'inventory.balances.index' },
+        { label: 'Ledger', routeName: 'inventory.ledger.index' },
+    ];
+
+    return links
+        .filter((link) => route().has(link.routeName))
+        .map((link) => ({
+            ...link,
+            href: route(link.routeName),
+        }));
+});
+
+const isCurrent = (name) => {
+    page.url;
+
+    if (!name || !route().has(name)) {
         return false;
     }
 
-    return route().current(item.route);
+    if (route().current(name)) {
+        return true;
+    }
+
+    if (name.endsWith('.index')) {
+        return route().current(`${name.replace(/\.index$/, '')}.*`);
+    }
+
+    return false;
 };
+
+const itemActive = (item) => isCurrent(item.route);
+
+const inventoryActive = computed(() => {
+    page.url;
+
+    return route().current('erp.inventory') || route().current('inventory.*');
+});
+
+watch(
+    inventoryActive,
+    (active) => {
+        if (active) {
+            inventoryOpen.value = true;
+        }
+    },
+    { immediate: true },
+);
+
+const linkClass = (active) =>
+    active
+        ? 'bg-[#5468f5] text-white shadow-lg shadow-indigo-950/40'
+        : 'text-slate-200 hover:bg-white/10 hover:text-white';
 </script>
 
 <template>
     <aside
-        class="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-slate-900 text-slate-100 shadow-xl transition-transform duration-200 lg:translate-x-0"
+        class="fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-gradient-to-b from-[#0c1b4d] via-[#12275f] to-[#16356f] text-slate-100 shadow-2xl transition-transform duration-200 lg:translate-x-0"
         :class="[
             mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
             collapsed ? 'lg:w-20' : 'lg:w-64',
         ]"
     >
-        <div class="flex h-16 items-center justify-between gap-2 border-b border-slate-800 px-4">
-            <Link :href="route('dashboard')" class="truncate text-sm font-bold tracking-wide">
-                <span v-if="!collapsed" class="text-white">{{ appName }}</span>
-                <span v-else class="text-white">BF</span>
+        <div class="flex h-[4.5rem] shrink-0 items-center justify-between gap-2 px-4">
+            <Link :href="route('dashboard')" class="flex min-w-0 items-center gap-3" @click="$emit('close-mobile')">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-indigo-500 text-white shadow-lg">
+                    <ErpIcon name="bag" class="h-5 w-5" />
+                </span>
+                <span v-if="!collapsed" class="min-w-0">
+                    <span class="block truncate text-sm font-bold leading-tight text-white">{{ brandTitle }}</span>
+                    <span v-if="brandMark" class="block text-[10px] font-semibold tracking-[0.22em] text-sky-200">{{ brandMark }}</span>
+                </span>
             </Link>
             <button
                 type="button"
-                class="hidden rounded p-1 text-slate-400 hover:bg-slate-800 hover:text-white lg:inline-flex"
+                class="hidden rounded-lg p-1 text-slate-300 hover:bg-white/10 hover:text-white lg:inline-flex"
                 aria-label="Toggle sidebar width"
                 @click="$emit('toggle-collapsed')"
             >
@@ -52,7 +131,7 @@ const isActive = (item) => {
             </button>
             <button
                 type="button"
-                class="rounded p-1 text-slate-400 hover:text-white lg:hidden"
+                class="rounded-lg p-1 text-slate-300 hover:bg-white/10 hover:text-white lg:hidden"
                 aria-label="Close navigation"
                 @click="$emit('close-mobile')"
             >
@@ -62,30 +141,58 @@ const isActive = (item) => {
             </button>
         </div>
 
-        <nav class="flex-1 space-y-1 overflow-y-auto p-2">
-            <Link
-                v-for="item in navigation"
-                :key="item.key"
-                :href="item.href"
-                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition"
-                :class="
-                    isActive(item)
-                        ? 'bg-slate-800 text-white'
-                        : 'text-slate-300 hover:bg-slate-800/70 hover:text-white'
-                "
-                @click="$emit('close-mobile')"
-            >
-                <span
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-800 text-xs font-bold uppercase"
+        <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-2">
+            <template v-for="item in navigation" :key="item.key">
+                <div v-if="item.key === 'inventory' && !collapsed">
+                    <button
+                        type="button"
+                        class="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition"
+                        :class="linkClass(itemActive(item))"
+                        :aria-expanded="inventoryOpen"
+                        @click="inventoryOpen = !inventoryOpen"
+                    >
+                        <ErpIcon :name="icons.inventory" class="h-5 w-5 shrink-0" />
+                        <span class="flex-1 truncate text-left">{{ item.label }}</span>
+                        <ErpIcon name="chevron" class="h-4 w-4 shrink-0 transition" :class="inventoryOpen ? 'rotate-90' : ''" />
+                    </button>
+                    <div v-show="inventoryOpen" class="ml-5 mt-1 space-y-1 border-l border-white/15 py-1 pl-3">
+                        <Link
+                            v-for="child in inventoryLinks"
+                            :key="child.routeName"
+                            :href="child.href"
+                            class="block rounded-xl px-3 py-1.5 text-sm transition"
+                            :class="isCurrent(child.routeName) ? 'bg-white/15 font-semibold text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'"
+                            @click="$emit('close-mobile')"
+                        >
+                            {{ child.label }}
+                        </Link>
+                    </div>
+                </div>
+                <Link
+                    v-else
+                    :href="item.href"
+                    class="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition"
+                    :class="linkClass(item.key === 'inventory' ? inventoryActive : itemActive(item))"
+                    @click="$emit('close-mobile')"
                 >
-                    {{ item.label.slice(0, 2) }}
-                </span>
-                <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
-            </Link>
+                    <ErpIcon :name="icons[item.key] || 'box'" class="h-5 w-5 shrink-0" />
+                    <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
+                </Link>
+            </template>
         </nav>
 
-        <div v-if="page.props.auth?.user && !collapsed" class="border-t border-slate-800 p-3 text-xs text-slate-400">
-            Roles: {{ page.props.auth.user.roles?.join(', ') || '—' }}
+        <div v-if="!collapsed" class="relative mx-3 mb-4 mt-2 shrink-0 overflow-hidden rounded-2xl bg-[#0a1844]/70 px-4 py-4">
+            <svg class="pointer-events-none absolute inset-x-0 bottom-0 h-16 w-full opacity-50" viewBox="0 0 220 70" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+                <path d="M0 70V48h18V28h22v20h28V18h34v30h26V34h30v14h62V70Z" fill="#7dd3fc" />
+                <rect x="86" y="26" width="6" height="6" fill="#fde68a" />
+                <rect x="98" y="26" width="6" height="6" fill="#fde68a" />
+                <rect x="110" y="26" width="6" height="6" fill="#fde68a" />
+                <path d="M150 48h18l6 10h-8l-2 8h-10z" fill="#f9a8d4" />
+            </svg>
+            <p class="relative text-sm font-semibold leading-snug text-white">
+                Quality Bags.<br />
+                Built for Your Business.
+            </p>
         </div>
     </aside>
 </template>

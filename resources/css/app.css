@@ -5,7 +5,7 @@
 @layer base {
     :root {
         color-scheme: light;
-        --erp-bg: 241 245 249;
+        --erp-bg: 244 246 255;
         --erp-surface: 255 255 255;
         --erp-surface-muted: 248 250 252;
         --erp-border: 226 232 240;
@@ -52,7 +52,14 @@
     .erp-shell {
         @apply min-h-screen;
         background-color: rgb(var(--erp-bg));
+        background-image:
+            radial-gradient(1100px 420px at 12% -8%, rgba(99, 102, 241, 0.1), transparent 55%),
+            radial-gradient(900px 380px at 100% 0%, rgba(56, 189, 248, 0.1), transparent 50%);
         color: rgb(var(--erp-text));
+    }
+
+    html.dark .erp-shell {
+        background-image: none;
     }
 
     .erp-surface {
@@ -61,13 +68,18 @@
     }
 
     .erp-content {
-        @apply mx-auto w-full max-w-7xl;
+        @apply mx-auto w-full min-w-0 max-w-7xl;
     }
 
     .erp-card {
-        @apply rounded-lg border shadow-sm;
+        @apply rounded-2xl border;
         background-color: rgb(var(--erp-surface));
         border-color: rgb(var(--erp-border));
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    }
+
+    html.dark .erp-card {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
     }
 
     .erp-input {

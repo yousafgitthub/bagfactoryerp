@@ -3,7 +3,7 @@ import { onMounted, ref, watch } from 'vue';
 const STORAGE_KEY = 'bag-factory-erp-theme';
 
 export function useErpTheme() {
-    const isDark = ref(false);
+    const isDark = ref(typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
 
     const apply = (dark) => {
         document.documentElement.classList.toggle('dark', dark);
@@ -26,5 +26,9 @@ export function useErpTheme() {
         isDark.value = !isDark.value;
     };
 
-    return { isDark, toggle };
+    const setDark = (dark) => {
+        isDark.value = dark;
+    };
+
+    return { isDark, toggle, setDark };
 }
