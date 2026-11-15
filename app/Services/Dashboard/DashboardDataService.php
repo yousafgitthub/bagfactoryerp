@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Schema;
 
 class DashboardDataService
 {
+    /** @var array<string, bool> */
+    private array $knownTables = [];
+
     /**
      * @param  array{period?: string, from?: string|null, to?: string|null}  $filters
      * @return array<string, mixed>
@@ -19,6 +22,10 @@ class DashboardDataService
         $monthStart = now()->startOfMonth()->toDateString();
         $monthEnd = now()->endOfMonth()->toDateString();
         $today = now()->toDateString();
+        $activeEmployees = $this->countWhenTableExists(
+            'employees',
+            fn () => DB::table('employees')->where('is_active', true)->count(),
+        );
 
         return [
             'filters' => [
@@ -26,7 +33,7 @@ class DashboardDataService
                 'from' => $range->start->toDateString(),
                 'to' => $range->end->toDateString(),
             ],
-            'summary' => $this->summaryCards($today, $monthStart, $monthEnd),
+            'summary' => $this->summaryCards($today, $monthStart, $monthEnd, $activeEmployees),
             'production_trend' => $this->productionTrend($range),
             'dana_vs_bags' => $this->danaVersusBags($range),
             'monthly_sales_expenses' => $this->monthlySalesExpenses(),
@@ -36,7 +43,7 @@ class DashboardDataService
             'inventory_alerts' => $this->inventoryAlerts(),
             'recent_transactions' => $this->recentTransactions(),
             'machine_performance' => $this->machinePerformance(),
-            'payroll_overview' => $this->payrollOverview(),
+            'payroll_overview' => $this->payrollOverview($activeEmployees),
             'financial_overview' => $this->financialOverview(),
             'team' => $this->teamOverview($user),
         ];
@@ -45,25 +52,27 @@ class DashboardDataService
     /**
      * @return list<array{key: string, label: string, value: string|int|float, hint: string}>
      */
-    private function summaryCards(string $today, string $monthStart, string $monthEnd): array
+    private function summaryCards(string $today, string $monthStart, string $monthEnd, int $activeEmployees): array
     {
+        $balances = $this->balanceTotals();
+
         return [
             [
                 'key' => 'raw_material_stock',
                 'label' => 'Raw material stock',
-                'value' => $this->sumBalance('raw'),
+                'value' => (float) ($balances['raw'] ?? 0),
                 'hint' => 'Unposted ledger balances when configured',
             ],
             [
                 'key' => 'dana_stock_kg',
                 'label' => 'Dana stock (KG)',
-                'value' => $this->sumBalance('dana'),
+                'value' => (float) ($balances['dana'] ?? 0),
                 'hint' => 'Dana finished goods inventory',
             ],
             [
                 'key' => 'finished_bag_stock',
                 'label' => 'Finished bag stock (pcs)',
-                'value' => $this->sumBalance('finished_bag'),
+                'value' => (float) ($balances['finished_bag'] ?? 0),
                 'hint' => 'Saleable shopping bags',
             ],
             [
@@ -87,7 +96,7 @@ class DashboardDataService
             [
                 'key' => 'active_employees',
                 'label' => 'Active employees',
-                'value' => $this->countWhenTableExists('employees', fn () => DB::table('employees')->where('is_active', true)->count()),
+                'value' => $activeEmployees,
                 'hint' => 'HR master',
             ],
             [
@@ -123,17 +132,21 @@ class DashboardDataService
         ];
     }
 
-    private function sumBalance(string $bucket): float|int
+    /**
+     * @return array<string, float|int|string>
+     */
+    private function balanceTotals(): array
     {
-        if (! Schema::hasTable('inventory_balances')) {
-            return 0;
+        if (! $this->tableExists('inventory_balances') || ! Schema::hasColumn('inventory_balances', 'bucket')) {
+            return [];
         }
 
-        if (Schema::hasColumn('inventory_balances', 'bucket')) {
-            return (float) DB::table('inventory_balances')->where('bucket', $bucket)->sum('quantity');
-        }
-
-        return 0;
+        return DB::table('inventory_balances')
+            ->selectRaw('bucket, SUM(quantity) as qty')
+            ->groupBy('bucket')
+            ->get()
+            ->mapWithKeys(fn ($row) => [(string) $row->bucket => $row->qty])
+            ->all();
     }
 
     private function todayWastage(string $today): float
@@ -141,7 +154,7 @@ class DashboardDataService
         $total = 0.0;
 
         foreach (['dana_batch_wastes', 'shopping_bag_batch_wastes'] as $table) {
-            if (! Schema::hasTable($table)) {
+            if (! $this->tableExists($table)) {
                 continue;
             }
 
@@ -156,26 +169,62 @@ class DashboardDataService
      */
     private function productionTrend(DashboardDateRange $range): array
     {
+        $danaByDay = $this->sumColumnByDay('dana_batches', 'posted_at', 'output_kg', $range);
+        $bagsByDay = $this->sumColumnByDay('shopping_bag_batches', 'posted_at', 'output_pieces', $range);
         $points = [];
 
         foreach ($range->days() as $day) {
-            $danaKg = Schema::hasTable('dana_batches')
-                ? (float) DB::table('dana_batches')->whereDate('posted_at', $day['date'])->sum('output_kg')
-                : 0.0;
-
-            $bagsPcs = Schema::hasTable('shopping_bag_batches')
-                ? (int) DB::table('shopping_bag_batches')->whereDate('posted_at', $day['date'])->sum('output_pieces')
-                : 0;
-
             $points[] = [
                 'label' => $day['label'],
                 'date' => $day['date'],
-                'dana_kg' => $danaKg,
-                'bags_pcs' => $bagsPcs,
+                'dana_kg' => (float) ($danaByDay[$day['date']] ?? 0),
+                'bags_pcs' => (int) ($bagsByDay[$day['date']] ?? 0),
             ];
         }
 
         return ['points' => $points];
+    }
+
+    /**
+     * One grouped sum per calendar day. Matches the previous per-day whereDate totals.
+     *
+     * @return array<string, float|int|string>
+     */
+    private function sumColumnByDay(string $table, string $dateColumn, string $sumColumn, DashboardDateRange $range): array
+    {
+        if (! $this->tableExists($table)) {
+            return [];
+        }
+
+        $day = $this->calendarDaySql($dateColumn);
+        $endExclusive = $range->end->copy()->startOfDay()->addDay();
+
+        return DB::table($table)
+            ->where($dateColumn, '>=', $range->start->copy()->startOfDay())
+            ->where($dateColumn, '<', $endExclusive)
+            ->selectRaw("{$day} as day, SUM({$sumColumn}) as total")
+            ->groupByRaw($day)
+            ->get()
+            ->mapWithKeys(fn ($row) => [substr((string) $row->day, 0, 10) => $row->total])
+            ->all();
+    }
+
+    private function calendarDaySql(string $column): string
+    {
+        return match (DB::connection()->getDriverName()) {
+            'sqlite' => "strftime('%Y-%m-%d', {$column})",
+            'pgsql' => "to_char({$column}, 'YYYY-MM-DD')",
+            default => "DATE({$column})",
+        };
+    }
+
+    private function calendarMonthSql(string $column): string
+    {
+        return match (DB::connection()->getDriverName()) {
+            'sqlite' => "strftime('%Y-%m', {$column})",
+            'pgsql' => "to_char({$column}, 'YYYY-MM')",
+            default => "DATE_FORMAT({$column}, '%Y-%m')",
+        };
     }
 
     /**
@@ -186,13 +235,13 @@ class DashboardDataService
         $dana = 0.0;
         $bags = 0;
 
-        if (Schema::hasTable('dana_batches')) {
+        if ($this->tableExists('dana_batches')) {
             $dana = (float) DB::table('dana_batches')
                 ->whereBetween('posted_at', [$range->start, $range->end])
                 ->sum('output_kg');
         }
 
-        if (Schema::hasTable('shopping_bag_batches')) {
+        if ($this->tableExists('shopping_bag_batches')) {
             $bags = (int) DB::table('shopping_bag_batches')
                 ->whereBetween('posted_at', [$range->start, $range->end])
                 ->sum('output_pieces');
@@ -210,25 +259,41 @@ class DashboardDataService
             return now()->subMonths(6 - $i)->startOfMonth();
         });
 
-        return $months->map(function ($month) {
-            $label = $month->format('M Y');
-            $start = $month->copy()->startOfMonth();
-            $end = $month->copy()->endOfMonth();
+        $start = $months->first()->copy()->startOfMonth();
+        $endExclusive = $months->last()->copy()->startOfMonth()->addMonth();
+        $salesByMonth = $this->sumColumnByMonth('sales_invoices', 'invoice_date', 'grand_total', $start, $endExclusive);
+        $expensesByMonth = $this->sumColumnByMonth('expenses', 'expense_date', 'amount', $start, $endExclusive);
 
-            $sales = Schema::hasTable('sales_invoices')
-                ? (float) DB::table('sales_invoices')->whereBetween('invoice_date', [$start, $end])->sum('grand_total')
-                : 0.0;
-
-            $expenses = Schema::hasTable('expenses')
-                ? (float) DB::table('expenses')->whereBetween('expense_date', [$start, $end])->sum('amount')
-                : 0.0;
+        return $months->map(function ($month) use ($salesByMonth, $expensesByMonth) {
+            $key = $month->format('Y-m');
 
             return [
-                'month' => $label,
-                'sales' => $sales,
-                'expenses' => $expenses,
+                'month' => $month->format('M Y'),
+                'sales' => (float) ($salesByMonth[$key] ?? 0),
+                'expenses' => (float) ($expensesByMonth[$key] ?? 0),
             ];
         })->all();
+    }
+
+    /**
+     * @return array<string, float|int|string>
+     */
+    private function sumColumnByMonth(string $table, string $dateColumn, string $sumColumn, \Carbon\Carbon $start, \Carbon\Carbon $endExclusive): array
+    {
+        if (! $this->tableExists($table)) {
+            return [];
+        }
+
+        $month = $this->calendarMonthSql($dateColumn);
+
+        return DB::table($table)
+            ->where($dateColumn, '>=', $start->toDateString())
+            ->where($dateColumn, '<', $endExclusive->toDateString())
+            ->selectRaw("{$month} as month_key, SUM({$sumColumn}) as total")
+            ->groupByRaw($month)
+            ->get()
+            ->mapWithKeys(fn ($row) => [substr((string) $row->month_key, 0, 7) => $row->total])
+            ->all();
     }
 
     /**
@@ -236,11 +301,11 @@ class DashboardDataService
      */
     private function machineWiseProduction(DashboardDateRange $range): array
     {
-        if (! Schema::hasTable('machines')) {
+        if (! $this->tableExists('machines')) {
             return [];
         }
 
-        if (Schema::hasTable('dana_batches')) {
+        if ($this->tableExists('dana_batches')) {
             return DB::table('machines')
                 ->leftJoin('dana_batches', function ($join) use ($range) {
                     $join->on('dana_batches.machine_id', '=', 'machines.id')
@@ -277,7 +342,7 @@ class DashboardDataService
      */
     private function materialConsumption(DashboardDateRange $range): array
     {
-        if (! Schema::hasTable('inventory_ledger_entries') || ! Schema::hasTable('materials')) {
+        if (! $this->tableExists('inventory_ledger_entries') || ! $this->tableExists('materials')) {
             return [];
         }
 
@@ -305,13 +370,13 @@ class DashboardDataService
         $wasteQty = 0.0;
         $productionQty = 0.0;
 
-        if (Schema::hasTable('dana_batch_wastes')) {
+        if ($this->tableExists('dana_batch_wastes')) {
             $wasteQty += (float) DB::table('dana_batch_wastes')
                 ->whereBetween('recorded_at', [$range->start, $range->end])
                 ->sum('quantity');
         }
 
-        if (Schema::hasTable('dana_batches')) {
+        if ($this->tableExists('dana_batches')) {
             $productionQty += (float) DB::table('dana_batches')
                 ->whereBetween('posted_at', [$range->start, $range->end])
                 ->sum('output_kg');
@@ -330,7 +395,7 @@ class DashboardDataService
      */
     private function inventoryAlerts(): array
     {
-        if (! Schema::hasTable('inventory_balances') || ! Schema::hasTable('materials')) {
+        if (! $this->tableExists('inventory_balances') || ! $this->tableExists('materials')) {
             return [];
         }
 
@@ -353,7 +418,7 @@ class DashboardDataService
      */
     private function recentTransactions(): array
     {
-        if (! Schema::hasTable('inventory_ledger_entries')) {
+        if (! $this->tableExists('inventory_ledger_entries')) {
             return [];
         }
 
@@ -375,7 +440,7 @@ class DashboardDataService
      */
     private function machinePerformance(): array
     {
-        if (! Schema::hasTable('machines')) {
+        if (! $this->tableExists('machines')) {
             return [];
         }
 
@@ -394,26 +459,21 @@ class DashboardDataService
     /**
      * @return array{headcount: int, draft_runs: int, last_run_period: string|null}
      */
-    private function payrollOverview(): array
+    private function payrollOverview(int $activeEmployees): array
     {
-        $headcount = $this->countWhenTableExists(
-            'employees',
-            fn () => DB::table('employees')->where('is_active', true)->count(),
-        );
-
         $draftRuns = $this->countWhenTableExists(
             'payroll_runs',
             fn () => DB::table('payroll_runs')->where('status', 'draft')->count(),
         );
 
         $lastPeriod = null;
-        if (Schema::hasTable('payroll_runs')) {
+        if ($this->tableExists('payroll_runs')) {
             $last = DB::table('payroll_runs')->orderByDesc('period_end')->value('period_label');
             $lastPeriod = $last !== null ? (string) $last : null;
         }
 
         return [
-            'headcount' => $headcount,
+            'headcount' => $activeEmployees,
             'draft_runs' => $draftRuns,
             'last_run_period' => $lastPeriod,
         ];
@@ -424,7 +484,7 @@ class DashboardDataService
      */
     private function financialOverview(): array
     {
-        if (! Schema::hasTable('gl_account_balances')) {
+        if (! $this->tableExists('gl_account_balances')) {
             return [
                 'cash_on_hand' => null,
                 'receivables' => null,
@@ -452,7 +512,7 @@ class DashboardDataService
 
     private function countWhenTableExists(string $table, callable $counter): int
     {
-        if (! Schema::hasTable($table)) {
+        if (! $this->tableExists($table)) {
             return 0;
         }
 
@@ -461,7 +521,7 @@ class DashboardDataService
 
     private function sumWhenTable(string $table, callable $counter): float|int
     {
-        if (! Schema::hasTable($table)) {
+        if (! $this->tableExists($table)) {
             return 0;
         }
 
@@ -470,7 +530,7 @@ class DashboardDataService
 
     private function monthAmount(string $table, string $column, string $start, string $end, ?string $dateColumn = 'invoice_date'): float
     {
-        if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $column)) {
+        if (! $this->tableExists($table) || ! Schema::hasColumn($table, $column)) {
             return 0.0;
         }
 
@@ -481,5 +541,14 @@ class DashboardDataService
         return (float) DB::table($table)
             ->whereBetween($dateColumn, [$start, $end])
             ->sum($column);
+    }
+
+    private function tableExists(string $table): bool
+    {
+        if (! array_key_exists($table, $this->knownTables)) {
+            $this->knownTables[$table] = Schema::hasTable($table);
+        }
+
+        return $this->knownTables[$table];
     }
 }

@@ -161,10 +161,11 @@ class SalesAnalyticsReportService
                 'ledger_balance' => round((float) $c->current_balance, 2),
             ])->all();
 
-        $invoiceOutstanding = SalesInvoice::query()
+        $invoiceOutstanding = (float) (SalesInvoice::query()
             ->whereIn('status', ['posted', 'partially_paid'])
-            ->get()
-            ->sum(fn ($i) => $i->outstandingAmount());
+            ->selectRaw('COALESCE(SUM(CASE WHEN grand_total > amount_paid THEN grand_total - amount_paid ELSE 0 END), 0) as outstanding')
+            ->first()
+            ->outstanding ?? 0);
 
         return new ReportResult(
             title: 'Outstanding receivables',

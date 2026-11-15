@@ -16,9 +16,10 @@ class FinancialReportService
     public function trialBalance(?string $from = null, ?string $to = null): Collection
     {
         $rows = $this->aggregateByAccount($from, $to);
+        $accounts = $this->accountsFor($rows);
 
-        return $rows->map(function ($row) {
-            $account = GlAccount::query()->findOrFail($row->gl_account_id);
+        return $rows->map(function ($row) use ($accounts) {
+            $account = $accounts->get((int) $row->gl_account_id) ?? GlAccount::query()->findOrFail($row->gl_account_id);
             $balance = $account->normal_balance === 'debit'
                 ? (float) $row->debit - (float) $row->credit
                 : (float) $row->credit - (float) $row->debit;
@@ -38,35 +39,8 @@ class FinancialReportService
     public function profitAndLoss(?string $from = null, ?string $to = null): array
     {
         $rows = $this->aggregateByAccount($from, $to);
-        $revenue = 0.0;
-        $expenses = 0.0;
-        $lines = collect();
 
-        foreach ($rows as $row) {
-            $account = GlAccount::query()->find($row->gl_account_id);
-            if (! $account) {
-                continue;
-            }
-
-            if ($account->type === 'revenue') {
-                $amount = (float) $row->credit - (float) $row->debit;
-                $revenue += $amount;
-                $lines->push(['account' => $account, 'amount' => round($amount, 2)]);
-            }
-
-            if ($account->type === 'expense') {
-                $amount = (float) $row->debit - (float) $row->credit;
-                $expenses += $amount;
-                $lines->push(['account' => $account, 'amount' => round($amount, 2)]);
-            }
-        }
-
-        return [
-            'revenue' => round($revenue, 2),
-            'expenses' => round($expenses, 2),
-            'net_profit' => round($revenue - $expenses, 2),
-            'lines' => $lines,
-        ];
+        return $this->profitAndLossFromAggregates($rows, $this->accountsFor($rows));
     }
 
     /**
@@ -75,13 +49,14 @@ class FinancialReportService
     public function balanceSheet(?string $asOf = null): array
     {
         $rows = $this->aggregateByAccount(null, $asOf);
+        $accounts = $this->accountsFor($rows);
         $assets = 0.0;
         $liabilities = 0.0;
         $equity = 0.0;
         $lines = collect();
 
         foreach ($rows as $row) {
-            $account = GlAccount::query()->find($row->gl_account_id);
+            $account = $accounts->get((int) $row->gl_account_id);
             if (! $account) {
                 continue;
             }
@@ -106,7 +81,7 @@ class FinancialReportService
             $lines->push(['account' => $account, 'amount' => round($balance, 2)]);
         }
 
-        $pnl = $this->profitAndLoss(null, $asOf);
+        $pnl = $this->profitAndLossFromAggregates($rows, $accounts);
         $equity += $pnl['net_profit'];
 
         return [
@@ -151,5 +126,58 @@ class FinancialReportService
             ->when($to, fn ($q) => $q->whereDate('gl_journal_entries.entry_date', '<=', $to))
             ->groupBy('gl_journal_lines.gl_account_id')
             ->get();
+    }
+
+    /**
+     * @param  Collection<int, object>  $rows
+     * @return Collection<int|string, GlAccount>
+     */
+    private function accountsFor(Collection $rows): Collection
+    {
+        $ids = $rows->pluck('gl_account_id')->unique()->filter()->values();
+
+        if ($ids->isEmpty()) {
+            return collect();
+        }
+
+        return GlAccount::query()->whereIn('id', $ids)->get()->keyBy(fn (GlAccount $account) => (int) $account->id);
+    }
+
+    /**
+     * @param  Collection<int, object>  $rows
+     * @param  Collection<int|string, GlAccount>  $accounts
+     * @return array{revenue: float, expenses: float, net_profit: float, lines: Collection}
+     */
+    private function profitAndLossFromAggregates(Collection $rows, Collection $accounts): array
+    {
+        $revenue = 0.0;
+        $expenses = 0.0;
+        $lines = collect();
+
+        foreach ($rows as $row) {
+            $account = $accounts->get((int) $row->gl_account_id);
+            if (! $account) {
+                continue;
+            }
+
+            if ($account->type === 'revenue') {
+                $amount = (float) $row->credit - (float) $row->debit;
+                $revenue += $amount;
+                $lines->push(['account' => $account, 'amount' => round($amount, 2)]);
+            }
+
+            if ($account->type === 'expense') {
+                $amount = (float) $row->debit - (float) $row->credit;
+                $expenses += $amount;
+                $lines->push(['account' => $account, 'amount' => round($amount, 2)]);
+            }
+        }
+
+        return [
+            'revenue' => round($revenue, 2),
+            'expenses' => round($expenses, 2),
+            'net_profit' => round($revenue - $expenses, 2),
+            'lines' => $lines,
+        ];
     }
 }
