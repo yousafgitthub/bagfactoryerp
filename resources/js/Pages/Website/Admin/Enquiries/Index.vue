@@ -1,4 +1,5 @@
 <script setup>
+import ErpEmptyState from '@/Components/Erp/ErpEmptyState.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
@@ -20,7 +21,10 @@ const apply = () => router.get(route('website.admin.enquiries.index'), { type: t
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Website enquiries" description="Sales follow-up. Saving a status does not create an invoice." />
+        <ErpPageHeader
+            title="Website enquiries"
+            help-text="Sales follow-up from the public site. Updating status does not create a sales invoice — convert in Sales when ready."
+        />
         <form class="mb-4 flex flex-wrap gap-2" @submit.prevent="apply">
             <select v-model="type" class="erp-input max-w-[12rem]">
                 <option value="">All types</option>
@@ -55,7 +59,11 @@ const apply = () => router.get(route('website.admin.enquiries.index'), { type: t
                         <td class="px-4 py-3">{{ row.status }}</td>
                         <td class="px-4 py-3">{{ row.createdAt }}</td>
                     </tr>
-                    <tr v-if="!enquiries.data?.length"><td colspan="6" class="px-4 py-6 text-erp-muted">No enquiries yet.</td></tr>
+                    <tr v-if="!enquiries.data?.length">
+                        <td colspan="6" class="p-0">
+                            <ErpEmptyState title="No enquiries yet." description="New contact and quote forms will appear here." class="border-0 shadow-none" />
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

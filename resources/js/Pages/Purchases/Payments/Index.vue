@@ -10,7 +10,10 @@ defineProps({ pageTitle: String, breadcrumbs: Array, payments: Object, canManage
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Supplier payments">
+        <ErpPageHeader
+            title="Supplier payments"
+            help-text="Each payment can settle one or more posted purchase invoices. Allocate the full amount before saving."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('purchases.payments.create')" class="erp-btn-primary">+ Payment</Link>
             </template>
@@ -23,6 +26,8 @@ defineProps({ pageTitle: String, breadcrumbs: Array, payments: Object, canManage
                 { key: 'amount', label: 'Amount' },
                 { key: 'method', label: 'Method' },
             ]"
+            empty-message="No supplier payments recorded."
+            empty-description="Record a payment when you pay a supplier against open invoices."
             :rows="
                 (payments.data || []).map((p) => ({
                     number: p.payment_number,

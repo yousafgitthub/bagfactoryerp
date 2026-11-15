@@ -22,7 +22,10 @@ const apply = () =>
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="General ledger" />
+        <ErpPageHeader
+            title="General ledger"
+            help-text="Choose one GL account and a date range to see every posted journal line affecting that account."
+        />
         <div class="mb-4 flex flex-wrap gap-2">
             <select v-model="accountId" class="erp-input">
                 <option value="">Select account…</option>
@@ -33,7 +36,6 @@ const apply = () =>
             <button type="button" class="erp-btn-secondary" @click="apply">Apply</button>
         </div>
         <ErpDataTable
-            v-if="lines.length"
             :columns="[
                 { key: 'date', label: 'Date' },
                 { key: 'je', label: 'Journal' },
@@ -41,6 +43,8 @@ const apply = () =>
                 { key: 'credit', label: 'Credit' },
                 { key: 'memo', label: 'Memo' },
             ]"
+            empty-message="No lines to show."
+            :empty-description="accountId ? 'No posted entries for this account in the selected dates.' : 'Select a GL account and apply filters.'"
             :rows="
                 lines.map((l) => ({
                     date: l.entry?.entry_date,

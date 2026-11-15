@@ -23,7 +23,10 @@ const apply = (patch) => {
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Production assignments">
+        <ErpPageHeader
+            title="Production assignments"
+            help-text="Tie employees to machines, departments, Dana batches, or bag orders for output tracking."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('hr.production-assignments.create')" class="erp-btn-primary">+ Assignment</Link>
             </template>
@@ -49,6 +52,8 @@ const apply = (patch) => {
                     { key: 'period', label: 'Period' },
                     { key: 'actions', label: '' },
                 ]"
+                empty-message="No production assignments yet."
+                empty-description="Create an assignment to link staff to a machine, batch, or order."
                 :rows="
                     assignments.data.map((a) => ({
                         id: a.id,

@@ -1,4 +1,5 @@
 <script setup>
+import ErpEmptyState from '@/Components/Erp/ErpEmptyState.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -46,7 +47,10 @@ const remove = (item) => {
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Gallery" description="JPG, PNG, or WEBP only. Files stay outside the public web root." />
+        <ErpPageHeader
+            title="Gallery"
+            help-text="JPG, PNG, or WEBP only. Images are served securely — files stay outside the public web root."
+        />
         <form class="erp-card mb-6 space-y-3 p-6" @submit.prevent="upload">
             <label class="block text-sm font-medium">Title<input v-model="createForm.title" class="erp-input mt-1" /></label>
             <label class="block text-sm font-medium">Caption<textarea v-model="createForm.caption" rows="2" class="erp-input mt-1" /></label>
@@ -54,7 +58,7 @@ const remove = (item) => {
             <p v-if="createForm.errors.image" class="text-sm text-red-600">{{ createForm.errors.image }}</p>
             <button class="erp-btn-primary" :disabled="createForm.processing">Upload</button>
         </form>
-        <div v-if="!items.length" class="rounded-xl border border-dashed border-slate-300 p-6 text-sm text-erp-muted">No gallery images yet.</div>
+        <ErpEmptyState v-if="!items.length" title="No gallery images yet." description="Upload factory or product photos customers can browse." />
         <div class="space-y-4">
             <form v-for="item in items" :key="item.id" class="erp-card grid gap-4 p-4 md:grid-cols-[10rem_1fr]" @submit.prevent="save(item)">
                 <img :src="item.imageUrl" alt="" class="h-32 w-full rounded-lg object-cover" />

@@ -1,4 +1,5 @@
 <script setup>
+import ErpEmptyState from '@/Components/Erp/ErpEmptyState.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
@@ -20,7 +21,10 @@ const search = () => router.get(route('website.admin.listings.index'), { q: q.va
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Public listings" description="Publishing a row does not change its internal price or stock." />
+        <ErpPageHeader
+            title="Public listings"
+            help-text="Mark items public to show them on the website. ERP price and stock stay unchanged until you sell through Sales."
+        />
         <form class="mb-6 flex gap-2" @submit.prevent="search">
             <input v-model="q" type="search" class="erp-input max-w-xs" placeholder="Search code or name" />
             <button type="submit" class="erp-btn-secondary">Search</button>
@@ -48,7 +52,11 @@ const search = () => router.get(route('website.admin.listings.index'), { q: q.va
                                 <Link v-if="canManage" :href="row.href" class="font-semibold text-erp-primary">Edit</Link>
                             </td>
                         </tr>
-                        <tr v-if="!bags.data?.length"><td colspan="5" class="px-4 py-6 text-erp-muted">No bag products.</td></tr>
+                        <tr v-if="!bags.data?.length">
+                            <td colspan="5" class="p-0">
+                                <ErpEmptyState title="No bag products in catalog." description="Create bag products in production, then enable public listing here." class="border-0 shadow-none" />
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -80,7 +88,11 @@ const search = () => router.get(route('website.admin.listings.index'), { q: q.va
                                 <Link v-if="canManage" :href="row.href" class="font-semibold text-erp-primary">Edit</Link>
                             </td>
                         </tr>
-                        <tr v-if="!materials.data?.length"><td colspan="5" class="px-4 py-6 text-erp-muted">No materials.</td></tr>
+                        <tr v-if="!materials.data?.length">
+                            <td colspan="5" class="p-0">
+                                <ErpEmptyState title="No materials in catalog." description="Publish dana or granules customers can request quotes for." class="border-0 shadow-none" />
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

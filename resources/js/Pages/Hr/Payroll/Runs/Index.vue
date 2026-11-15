@@ -18,7 +18,10 @@ defineProps({
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Payroll runs">
+        <ErpPageHeader
+            title="Payroll runs"
+            help-text="Each run covers one pay period. Open a run to generate lines, approve, and record payments."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('hr.payroll.runs.create')" class="erp-btn-primary">+ New run</Link>
             </template>
@@ -34,6 +37,8 @@ defineProps({
                     { key: 'paid', label: 'Paid' },
                     { key: 'actions', label: '' },
                 ]"
+                empty-message="No payroll runs yet."
+                empty-description="Start a new run from the button above when you are ready to pay staff."
                 :rows="
                     runs.data.map((r) => ({
                         id: r.id,

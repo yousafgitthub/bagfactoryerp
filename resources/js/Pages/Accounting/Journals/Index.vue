@@ -10,7 +10,10 @@ defineProps({ pageTitle: String, breadcrumbs: Array, entries: Object });
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Journal entries" />
+        <ErpPageHeader
+            title="Journal entries"
+            help-text="Automatic postings from ERP modules and manual adjustments. Open a journal to see debits and credits."
+        />
         <ErpDataTable
             :columns="[
                 { key: 'number', label: 'JE#' },
@@ -19,6 +22,8 @@ defineProps({ pageTitle: String, breadcrumbs: Array, entries: Object });
                 { key: 'debit', label: 'Debit' },
                 { key: 'credit', label: 'Credit' },
             ]"
+            empty-message="No journal entries yet."
+            empty-description="Journals appear when you post inventory, sales, purchases, payroll, or expenses."
             :rows="
                 (entries.data || []).map((e) => ({
                     number: e.entry_number,

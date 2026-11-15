@@ -30,7 +30,11 @@ const save = () => form.put(route('website.admin.enquiries.update', props.enquir
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader :title="enquiry.reference" :description="`${enquiry.type} · ${enquiry.createdAt}`" />
+        <ErpPageHeader
+            :title="enquiry.reference"
+            :description="`${enquiry.type} · ${enquiry.createdAt}`"
+            help-text="Update status for your team. Link an existing customer record when this lead becomes a sale."
+        />
         <div class="grid gap-6 lg:grid-cols-2">
             <section class="erp-card space-y-2 p-6 text-sm">
                 <p><span class="font-semibold">Name:</span> {{ enquiry.name }}</p>

@@ -1,4 +1,5 @@
 <script setup>
+import ErpEmptyState from '@/Components/Erp/ErpEmptyState.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -41,7 +42,10 @@ const remove = (item) => {
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Testimonials" description="Leave this empty unless the quote is real. An empty list hides the public section." />
+        <ErpPageHeader
+            title="Testimonials"
+            help-text="Only add real customer quotes. When the list is empty the public testimonials section stays hidden."
+        />
         <form class="erp-card mb-6 space-y-3 p-6" @submit.prevent="create">
             <label class="block text-sm font-medium">Name<input v-model="createForm.author_name" class="erp-input mt-1" required /></label>
             <label class="block text-sm font-medium">Role<input v-model="createForm.author_role" class="erp-input mt-1" /></label>
@@ -49,7 +53,7 @@ const remove = (item) => {
             <label class="flex items-center gap-2 text-sm"><input v-model="createForm.is_visible" type="checkbox" :true-value="1" :false-value="0" /> Visible</label>
             <button class="erp-btn-primary" :disabled="createForm.processing">Add testimonial</button>
         </form>
-        <p v-if="!testimonials.length" class="text-sm text-erp-muted">No testimonials yet.</p>
+        <ErpEmptyState v-if="!testimonials.length" title="No testimonials yet." description="Add verified quotes from customers you are allowed to name." />
         <form v-for="item in testimonials" :key="item.id" class="erp-card mb-4 space-y-3 p-6" @submit.prevent="save(item)">
             <input v-model="edits[item.id].author_name" class="erp-input" />
             <input v-model="edits[item.id].author_role" class="erp-input" />

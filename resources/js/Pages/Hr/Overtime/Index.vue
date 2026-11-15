@@ -41,7 +41,10 @@ const approve = (id, decision) => {
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Overtime register" />
+        <ErpPageHeader
+            title="Overtime register"
+            help-text="Log extra hours, then approve them so amounts are included in the next payroll run."
+        />
 
         <form v-if="canManage" class="erp-card mb-6 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5" @submit.prevent="submitOvertime">
             <select v-model="createForm.employee_id" class="erp-input" required>
@@ -74,6 +77,8 @@ const approve = (id, decision) => {
                     { key: 'status', label: 'Status' },
                     { key: 'actions', label: '' },
                 ]"
+                empty-message="No overtime entries in this range."
+                empty-description="Add hours above or widen the date filters."
                 :rows="
                     records.data.map((r) => ({
                         id: r.id,

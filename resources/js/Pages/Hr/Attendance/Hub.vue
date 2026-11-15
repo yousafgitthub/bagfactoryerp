@@ -1,4 +1,5 @@
 <script setup>
+import ErpModuleIntro from '@/Components/Erp/ErpModuleIntro.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
@@ -15,7 +16,19 @@ defineProps({
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Attendance" description="Daily register, monthly summaries, and overtime approval." />
+        <ErpPageHeader
+            title="Attendance"
+            help-text="Record who was present each day, review monthly summaries, and approve overtime before payroll."
+        />
+
+        <ErpModuleIntro
+            title="Attendance workflow"
+            :steps="[
+                'Enter or adjust the daily sheet for all active employees.',
+                'Browse the register or monthly report to spot absences and late arrivals.',
+                'Approve overtime requests so hours flow into the next payroll run.',
+            ]"
+        />
 
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Link

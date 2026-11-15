@@ -1,4 +1,5 @@
 <script setup>
+import ErpModuleIntro from '@/Components/Erp/ErpModuleIntro.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
@@ -18,12 +19,21 @@ defineProps({
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
         <ErpPageHeader
             title="Payroll"
-            description="Monthly and daily wages, advances, loans, and salary payments."
+            help-text="Run monthly payroll from attendance, apply advances and loans, then mark salaries paid when treasury pays out."
         >
             <template #actions>
                 <Link v-if="canManage" :href="route('hr.payroll.runs.create')" class="erp-btn-primary">+ Payroll run</Link>
             </template>
         </ErpPageHeader>
+
+        <ErpModuleIntro
+            title="Payroll run"
+            :steps="[
+                'Create a payroll run for the period and generate payslip lines from attendance.',
+                'Review totals, then approve when figures match your sign-off.',
+                'Record salary payments against treasury when cash or bank is disbursed.',
+            ]"
+        />
 
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Link

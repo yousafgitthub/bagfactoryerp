@@ -31,7 +31,10 @@ const save = (category) => {
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Public categories" description="Sample catalog copy. Slugs stay fixed so public URLs do not change." />
+        <ErpPageHeader
+            title="Public categories"
+            help-text="Card copy visitors see on the website. Slugs stay fixed so public URLs do not change."
+        />
         <div class="space-y-6">
             <form v-for="category in categories" :key="category.id" class="erp-card space-y-3 p-6" @submit.prevent="save(category)">
                 <p class="text-xs font-semibold uppercase tracking-wide text-erp-muted">{{ category.slug }}</p>

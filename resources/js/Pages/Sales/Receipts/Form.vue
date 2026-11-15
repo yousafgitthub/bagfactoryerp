@@ -34,7 +34,10 @@ const submit = () => {
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Record receipt" />
+        <ErpPageHeader
+            title="Record receipt"
+            help-text="Pick the customer, choose invoices to settle, and enter amounts until the allocation total matches cash received."
+        />
         <form class="erp-card max-w-2xl space-y-4 p-6" @submit.prevent="submit">
             <select v-model="form.customer_id" class="erp-input w-full" required>
                 <option value="">Customer</option>

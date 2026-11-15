@@ -1,4 +1,5 @@
 <script setup>
+import ErpModuleIntro from '@/Components/Erp/ErpModuleIntro.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpLayout from '@/Layouts/ErpLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
@@ -17,12 +18,21 @@ defineProps({
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
         <ErpPageHeader
             title="Employees"
-            description="HR profiles, salary rate history, and production floor assignments."
+            help-text="Maintain staff profiles, salary rates, and who is assigned to machines or production batches."
         >
             <template #actions>
                 <Link v-if="canManage" :href="route('hr.employees.create')" class="erp-btn-primary">+ Employee</Link>
             </template>
         </ErpPageHeader>
+
+        <ErpModuleIntro
+            title="People on the floor"
+            :steps="[
+                'Add or update employee records and pay rates before payroll runs.',
+                'Link staff to machines, departments, or batches when tracking output.',
+                'Use the directory to filter by department or status.',
+            ]"
+        />
 
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Link

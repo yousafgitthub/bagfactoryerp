@@ -13,7 +13,10 @@ const apply = () => router.get(route('accounting.reports.balance-sheet'), { as_o
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Balance sheet" />
+        <ErpPageHeader
+            title="Balance sheet"
+            help-text="Assets, liabilities, and equity as of the chosen date. Pick an as-of date that matches month-end or audit cut-off."
+        />
         <div class="mb-4 flex gap-2">
             <input v-model="asOf" type="date" class="erp-input" />
             <button type="button" class="erp-btn-secondary" @click="apply">Apply</button>

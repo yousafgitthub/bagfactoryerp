@@ -52,7 +52,10 @@ const submit = () => {
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader :title="pageTitle" />
+        <ErpPageHeader
+            title="Record supplier payment"
+            help-text="Select open invoices, tick allocations, and ensure the payment amount matches the total allocated."
+        />
         <form class="erp-card max-w-2xl space-y-4 p-6" @submit.prevent="submit">
             <select v-model="form.supplier_id" class="erp-input" required>
                 <option value="">Supplier</option>

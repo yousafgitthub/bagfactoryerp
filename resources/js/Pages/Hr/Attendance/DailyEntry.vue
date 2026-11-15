@@ -65,7 +65,10 @@ const submit = () => {
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Daily attendance entry" description="One row per active employee; duplicates for the same date are rejected.">
+        <ErpPageHeader
+            title="Daily attendance entry"
+            help-text="One row per active employee for the selected date. Saving replaces any earlier sheet for that day."
+        >
             <template #actions>
                 <input type="date" class="erp-input" :value="attendanceDate" @change="changeDate($event.target.value)" />
             </template>

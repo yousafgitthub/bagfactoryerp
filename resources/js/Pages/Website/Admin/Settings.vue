@@ -44,7 +44,10 @@ const save = () => form.put(route('website.admin.settings.update'));
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Website settings" description="Leave phone, email, WhatsApp, address, and map blank if they are not set. Do not invent them." />
+        <ErpPageHeader
+            title="Website settings"
+            help-text="Contact and hero copy on the public site. Leave fields blank when unknown — do not enter placeholder numbers."
+        />
         <form class="erp-card max-w-3xl space-y-4 p-6" @submit.prevent="save">
             <fieldset :disabled="!canManage" class="space-y-4">
                 <label class="block text-sm font-medium">Company name<input v-model="form.company_name" class="erp-input mt-1" /></label>

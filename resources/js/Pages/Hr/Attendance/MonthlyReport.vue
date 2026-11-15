@@ -22,7 +22,10 @@ const apply = (patch) => {
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Monthly attendance report">
+        <ErpPageHeader
+            title="Monthly attendance report"
+            help-text="Pick a calendar month and optional department to see present, absent, and late counts per employee."
+        >
             <template #actions>
                 <input type="month" class="erp-input" :value="month" @change="apply({ month: $event.target.value })" />
                 <select class="erp-input" :value="departmentId || ''" @change="apply({ department_id: $event.target.value || null })">

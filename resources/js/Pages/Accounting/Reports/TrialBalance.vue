@@ -16,7 +16,10 @@ const apply = () => router.get(route('accounting.reports.trial-balance'), { from
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Trial balance" />
+        <ErpPageHeader
+            title="Trial balance"
+            help-text="Lists every GL account with debit and credit totals for the selected period. Debits should equal credits when books are balanced."
+        />
         <div class="mb-4 flex flex-wrap gap-2">
             <input v-model="from" type="date" class="erp-input" />
             <input v-model="to" type="date" class="erp-input" />
@@ -29,6 +32,8 @@ const apply = () => router.get(route('accounting.reports.trial-balance'), { from
                 { key: 'credit', label: 'Credit' },
                 { key: 'balance', label: 'Balance' },
             ]"
+            empty-message="No GL activity in this period."
+            empty-description="Adjust the date range or post transactions for the period you need."
             :rows="
                 rows.map((r) => ({
                     code: `${r.account.code} ${r.account.name}`,

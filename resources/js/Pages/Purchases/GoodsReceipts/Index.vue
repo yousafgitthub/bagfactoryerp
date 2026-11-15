@@ -11,7 +11,10 @@ defineProps({ pageTitle: String, breadcrumbs: Array, receipts: Object });
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Goods receipts" />
+        <ErpPageHeader
+            title="Goods receipts"
+            help-text="GRNs increase stock when posted. Raise one when material arrives against a purchase order."
+        />
         <ErpDataTable
             :columns="[
                 { key: 'number', label: 'GRN' },
@@ -21,6 +24,8 @@ defineProps({ pageTitle: String, breadcrumbs: Array, receipts: Object });
                 { key: 'status', label: 'Status' },
                 { key: 'actions', label: '' },
             ]"
+            empty-message="No goods receipts yet."
+            empty-description="Post a GRN when supplier material reaches the warehouse."
             :rows="
                 (receipts.data || []).map((r) => ({
                     id: r.id,

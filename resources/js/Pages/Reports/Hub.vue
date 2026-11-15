@@ -16,7 +16,7 @@ defineProps({
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
         <ErpPageHeader
             title="Reports & analytics"
-            description="Central catalog — all figures from posted transactions and ledgers."
+            help-text="Central catalog — all figures from posted transactions and ledgers. Pick a report, set dates, then export or print."
         />
         <div v-for="(label, key) in categories" :key="key" class="mb-8">
             <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-erp-muted">{{ label }}</h2>

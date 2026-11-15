@@ -153,3 +153,50 @@ Master data CRUD is also reachable under `/master-data/{resource}` (units, wareh
 | Administration | Website, settings | Website admin + **Factory master data** under settings |
 
 Active item detection: longest matching path among module hub **and** declared child routes.
+
+---
+
+## 7. Wave 2 implementation log
+
+**Branch:** `cursor/erp-ux-improvement-0c65` (continued)  
+**Date:** 2026-11-15
+
+### Completed checklist
+
+| Scope item | Done |
+|------------|------|
+| HR hubs + main pages (`ErpModuleIntro`, `helpText`) | Yes — Employees, Attendance, Payroll hubs; directory; daily/monthly attendance; payroll runs; production assignments; overtime; employee show |
+| Accounting & Reports breadcrumbs + period copy | Yes — breadcrumbs unchanged (already in controllers); `helpText` on hub, trial balance, P&amp;L, balance sheet, ledger, journals index/show, reports hub/show |
+| GRN / purchase invoice / supplier payment UX | Yes — GRN &amp; invoice show (header, lines label, summary); payments index/form; goods receipts &amp; invoice indexes |
+| Sales customer receipts | Yes — index/form `helpText` + empty states (no separate receipt show route) |
+| Website admin | Yes — hub intro; enquiries, listings, categories, gallery, settings, testimonials, enquiry show |
+| Table empty states | Yes — `ErpEmptyState` via `ErpDataTable` messages or inline on website/HR tables |
+
+### Files modified
+
+- `resources/js/Pages/Hr/Employees/Hub.vue`, `Index.vue`, `Show.vue`
+- `resources/js/Pages/Hr/Attendance/Hub.vue`, `Index.vue`, `DailyEntry.vue`, `MonthlyReport.vue`
+- `resources/js/Pages/Hr/Payroll/Hub.vue`, `Runs/Index.vue`, `Runs/Show.vue`
+- `resources/js/Pages/Hr/ProductionAssignments/Index.vue`, `Overtime/Index.vue`
+- `resources/js/Pages/Accounting/Hub.vue`, `Journals/Index.vue`, `Journals/Show.vue`
+- `resources/js/Pages/Accounting/Reports/TrialBalance.vue`, `ProfitLoss.vue`, `BalanceSheet.vue`, `Ledger.vue`
+- `resources/js/Pages/Reports/Hub.vue`, `Reports/Show.vue`
+- `resources/js/Pages/Purchases/GoodsReceipts/Show.vue`, `Index.vue`, `Invoices/Show.vue`, `Index.vue`, `Payments/Index.vue`, `Form.vue`
+- `resources/js/Pages/Sales/Receipts/Index.vue`, `Form.vue`
+- `resources/js/Pages/Website/Admin/Hub.vue`, `Enquiries/Index.vue`, `Enquiries/Show.vue`, `Listings/Index.vue`, `Categories.vue`, `Gallery.vue`, `Settings.vue`, `Testimonials.vue`
+- `tests/Feature/ErpUxWave2Test.php` (new)
+- `docs/erp-ux-audit-and-plan.md` (this section)
+
+### Tests run
+
+- `php artisan test` — **104 passed** (571 assertions), including 3 new `ErpUxWave2Test` cases
+- `npm run build` — success
+
+### Remaining UX issues (post–Wave 2)
+
+- Dana/Bag hub “recent batches” lists still use plain text when empty (not index tables).
+- Dashboard mobile density unchanged.
+- Master data indexes may still show numeric IDs where a code exists.
+- HR payroll advances/loans forms — no extra intro copy.
+- Collapsed sidebar still hides nested links until expanded.
+- Optional: `ErpFormField` labels on legacy filter rows (e.g. batch # placeholders).

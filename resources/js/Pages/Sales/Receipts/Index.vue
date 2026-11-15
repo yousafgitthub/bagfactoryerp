@@ -10,7 +10,10 @@ defineProps({ pageTitle: String, breadcrumbs: Array, receipts: Object, canManage
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Customer receipts">
+        <ErpPageHeader
+            title="Customer receipts"
+            help-text="Money received from customers, allocated to posted sales invoices. Reduces accounts receivable when saved."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('sales.receipts.create')" class="erp-btn-primary">+ Receipt</Link>
             </template>
@@ -22,6 +25,8 @@ defineProps({ pageTitle: String, breadcrumbs: Array, receipts: Object, canManage
                 { key: 'date', label: 'Date' },
                 { key: 'amount', label: 'Amount' },
             ]"
+            empty-message="No customer receipts yet."
+            empty-description="Record a receipt when a customer pays against open invoices."
             :rows="
                 (receipts.data || []).map((r) => ({
                     number: r.receipt_number,

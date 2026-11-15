@@ -23,7 +23,10 @@ const applyFilters = (patch) => {
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Employee directory" description="Search by code, name, or phone; filter by department.">
+        <ErpPageHeader
+            title="Employee directory"
+            help-text="Search by code, name, or phone; filter by department. Open a profile to edit pay rates and assignments."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('hr.employees.create')" class="erp-btn-primary">+ New</Link>
             </template>
@@ -70,6 +73,7 @@ const applyFilters = (patch) => {
                     }))
                 "
                 empty-message="No employees yet."
+                empty-description="Add your first employee to enable attendance and payroll."
             >
                 <template #cell-status="{ row }">
                     <ErpStatusBadge :status="row.status" />

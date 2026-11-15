@@ -11,7 +11,10 @@ defineProps({ pageTitle: String, breadcrumbs: Array, invoices: Object, canManage
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Purchase invoices">
+        <ErpPageHeader
+            title="Purchase invoices"
+            help-text="Supplier bills after goods are received. Post each invoice before recording payments."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('purchases.invoices.create')" class="erp-btn-primary">+ Invoice</Link>
             </template>
@@ -26,6 +29,8 @@ defineProps({ pageTitle: String, breadcrumbs: Array, invoices: Object, canManage
                 { key: 'status', label: 'Status' },
                 { key: 'actions', label: '' },
             ]"
+            empty-message="No purchase invoices yet."
+            empty-description="Create an invoice when the supplier bill arrives."
             :rows="
                 (invoices.data || []).map((inv) => ({
                     id: inv.id,

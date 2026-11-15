@@ -14,7 +14,10 @@ const apply = () => router.get(route('accounting.reports.profit-loss'), { from: 
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Profit & loss" />
+        <ErpPageHeader
+            title="Profit & loss"
+            help-text="Revenue minus expenses for the date range. Net profit rolls into equity on the balance sheet."
+        />
         <div class="mb-4 flex gap-2">
             <input v-model="from" type="date" class="erp-input" />
             <input v-model="to" type="date" class="erp-input" />

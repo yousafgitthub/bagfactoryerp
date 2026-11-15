@@ -1,4 +1,5 @@
 <script setup>
+import ErpEmptyState from '@/Components/Erp/ErpEmptyState.vue';
 import ErpFormSection from '@/Components/Erp/ErpFormSection.vue';
 import ErpPageHeader from '@/Components/Erp/ErpPageHeader.vue';
 import ErpStatusBadge from '@/Components/Erp/ErpStatusBadge.vue';
@@ -18,7 +19,11 @@ defineProps({
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader :title="employee.name" :description="employee.employee_code">
+        <ErpPageHeader
+            :title="employee.name"
+            :description="employee.employee_code"
+            help-text="Salary rate history drives payroll calculations. Keep assignments updated for production reporting."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('hr.employees.edit', employee.id)" class="erp-btn-secondary">Edit</Link>
             </template>
@@ -98,7 +103,9 @@ defineProps({
                         <td>{{ rate.overtime_rate ?? '—' }}</td>
                     </tr>
                     <tr v-if="!employee.salary_rates?.length">
-                        <td colspan="6" class="text-center text-erp-muted">No history rows.</td>
+                        <td colspan="6" class="p-0">
+                            <ErpEmptyState title="No salary history yet." description="Edit the employee to add effective pay rates." class="border-0 shadow-none" />
+                        </td>
                     </tr>
                 </tbody>
             </table>

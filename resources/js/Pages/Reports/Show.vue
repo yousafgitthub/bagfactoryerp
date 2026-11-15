@@ -59,7 +59,11 @@ const openPrint = () => window.open(props.exportUrls.print, '_blank');
 <template>
     <Head :title="pageTitle" />
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader :title="title" :description="description" />
+        <ErpPageHeader
+            :title="title"
+            :description="description"
+            help-text="Adjust filters and Apply to refresh. Export uses the same period and search you see on screen."
+        />
         <div class="mb-4 flex flex-wrap items-end gap-2">
             <template v-if="definition.date_filter">
                 <label class="text-sm">
@@ -104,6 +108,8 @@ const openPrint = () => window.open(props.exportUrls.print, '_blank');
         <ErpDataTable
             :columns="columns"
             :rows="rows"
+            empty-message="No rows for these filters."
+            empty-description="Widen the date range or clear search, then Apply again."
             :searchable="false"
             :sort-key="sortKey"
             :sort-direction="sortDirection"

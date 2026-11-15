@@ -24,7 +24,10 @@ const submitCancel = () => cancelForm.post(route('hr.payroll.runs.cancel', props
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader :title="'Payroll ' + run.period_label">
+        <ErpPageHeader
+            :title="'Payroll ' + run.period_label"
+            help-text="Generate refreshes payslip lines from attendance. Approve only when net pay and deductions look correct."
+        >
             <template #actions>
                 <span class="mr-2"><ErpStatusBadge :status="run.status" /></span>
                 <button

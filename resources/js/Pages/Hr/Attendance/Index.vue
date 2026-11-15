@@ -22,7 +22,10 @@ const applyFilters = (patch) => {
     <Head :title="pageTitle" />
 
     <ErpLayout :page-title="pageTitle" :breadcrumbs="breadcrumbs">
-        <ErpPageHeader title="Attendance register">
+        <ErpPageHeader
+            title="Attendance register"
+            help-text="Filter by date range or employee. Use daily entry for bulk updates on a single day."
+        >
             <template #actions>
                 <Link v-if="canManage" :href="route('hr.attendance.create')" class="erp-btn-primary">+ Record</Link>
             </template>
@@ -46,6 +49,8 @@ const applyFilters = (patch) => {
                     { key: 'hours', label: 'Hours' },
                     { key: 'actions', label: '' },
                 ]"
+                empty-message="No attendance records in this range."
+                empty-description="Try widening the dates or use daily entry to log today."
                 :rows="
                     attendances.data.map((a) => ({
                         id: a.id,
