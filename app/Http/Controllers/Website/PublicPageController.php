@@ -40,23 +40,9 @@ class PublicPageController extends Controller
         return $this->productIndex($request, null);
     }
 
-    public function category(string $category): Response
+    public function category(Request $request, string $category): Response
     {
-        $record = $this->catalog->findCategory($category);
-        abort_unless($record, 404);
-
-        return Inertia::render('Website/Products/Index', [
-            'title' => $record->name,
-            'activeCategory' => $category,
-            'categories' => $this->catalog->categories(),
-            'category' => [
-                'name' => $record->name,
-                'summary' => $record->summary,
-                'body' => $record->body,
-                'isSample' => $record->is_sample,
-            ],
-            'products' => $this->catalog->products($category),
-        ]);
+        return $this->productIndex($request, $category);
     }
 
     public function show(string $category, string $slug): Response
@@ -108,6 +94,32 @@ class PublicPageController extends Controller
         ]);
     }
 
+    public function quality(): Response
+    {
+        return Inertia::render('Website/Quality', [
+            'title' => 'Quality Control',
+            'notice' => 'Demonstration process only. This is not a certification, an audit result, or a statement of factory practice.',
+            'steps' => [
+                [
+                    'title' => 'Incoming material check',
+                    'body' => 'Demonstration step. A sample process would record the material lot before it is issued to production. This page does not state that this factory performs that check.',
+                ],
+                [
+                    'title' => 'In-process weight check',
+                    'body' => 'Demonstration step. A sample process would compare a bag’s weight with the figure stored on the product. No pass rate is published here.',
+                ],
+                [
+                    'title' => 'Print and seal review',
+                    'body' => 'Demonstration step. A sample process would look at print placement and seals when an order asks for print. This is not a printing-quality claim.',
+                ],
+                [
+                    'title' => 'Finished-goods count',
+                    'body' => 'Demonstration step. A sample process would count good pieces and set rejects aside. Reject rates are not published here.',
+                ],
+            ],
+        ]);
+    }
+
     public function manufacturing(): Response
     {
         $settings = WebsiteSetting::current();
@@ -145,12 +157,27 @@ class PublicPageController extends Controller
 
     private function productIndex(Request $request, ?string $category): Response
     {
+        $record = null;
+        if ($category !== null) {
+            $record = $this->catalog->findCategory($category);
+            abort_unless($record, 404);
+        }
+
+        $search = trim($request->string('q')->toString());
+
         return Inertia::render('Website/Products/Index', [
-            'title' => 'Products',
+            'title' => $record?->name ?? 'Products',
             'activeCategory' => $category,
             'categories' => $this->catalog->categories(),
-            'category' => null,
-            'products' => $this->catalog->products($category),
+            'category' => $record ? [
+                'name' => $record->name,
+                'summary' => $record->summary,
+                'body' => $record->body,
+                'isSample' => $record->is_sample,
+                'href' => route('website.public.products.category', $record->slug),
+            ] : null,
+            'search' => $search,
+            'products' => $this->catalog->products($category, $search !== '' ? $search : null),
         ]);
     }
 

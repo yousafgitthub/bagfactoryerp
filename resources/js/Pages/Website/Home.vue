@@ -90,6 +90,7 @@ const artFor = (slug) => {
                     <div class="p-5">
                         <h3 class="text-lg font-extrabold text-[#0f2744]">{{ category.name }}</h3>
                         <p v-if="category.cardTitle" class="mt-1 text-sm font-semibold text-[#0f766e]">{{ category.cardTitle }}</p>
+                        <p v-if="category.productCount" class="mt-2 text-xs font-semibold text-slate-500">{{ category.productCount }} published</p>
                         <Link :href="category.href" class="mt-4 inline-flex rounded-full bg-[#1d4ed8] px-4 py-2 text-sm font-bold text-white hover:bg-[#1e40af]">
                             View Details →
                         </Link>

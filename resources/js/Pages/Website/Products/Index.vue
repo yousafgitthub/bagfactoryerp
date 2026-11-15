@@ -1,19 +1,26 @@
 <script setup>
 import CatalogArt from '@/Components/Website/CatalogArt.vue';
 import SitePage from '@/Components/Website/SitePage.vue';
-import { Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
-defineProps({
+const props = defineProps({
     title: { type: String, required: true },
     activeCategory: { type: String, default: null },
     categories: { type: Array, default: () => [] },
     category: { type: Object, default: null },
     products: { type: Array, default: () => [] },
+    search: { type: String, default: '' },
 });
 
 const page = usePage();
 const showSample = computed(() => page.props.website?.showSampleNotice);
+const query = ref(props.search || '');
+
+const submitSearch = () => {
+    const href = props.activeCategory ? `/products/${props.activeCategory}` : '/products';
+    router.get(href, { q: query.value }, { preserveState: true, replace: true });
+};
 
 const artFor = (slug) => {
     if (slug === 'printed-bags') return 'printed';
@@ -27,6 +34,11 @@ const artFor = (slug) => {
 <template>
     <SitePage :title="title" intro="Published products only. Internal prices and stock quantities are not shown.">
         <p v-if="showSample" class="mb-6 text-sm text-slate-500">Sample catalog descriptions. The factory can replace this text. It is not a verified company claim.</p>
+        <form class="mb-6 flex max-w-xl gap-2" @submit.prevent="submitSearch">
+            <input v-model="query" type="search" name="q" placeholder="Search published products" class="w-full rounded-full border border-slate-200 px-4 py-2 text-sm" />
+            <button type="submit" class="rounded-full bg-[#0f2744] px-4 py-2 text-sm font-bold text-white">Search</button>
+        </form>
+
         <div class="mb-8 flex flex-wrap gap-2">
             <Link href="/products" class="rounded-full px-4 py-2 text-sm font-bold" :class="!activeCategory ? 'bg-[#1d4ed8] text-white' : 'bg-white text-slate-700 ring-1 ring-slate-200'">All</Link>
             <Link
@@ -52,9 +64,20 @@ const artFor = (slug) => {
                     <CatalogArt v-else :variant="artFor(product.category)" />
                 </div>
                 <div class="p-5">
-                    <h2 class="text-lg font-extrabold text-[#0f2744]">{{ product.name }}</h2>
+                    <p v-if="product.categoryName" class="text-xs font-bold uppercase tracking-wide text-[#0f766e]">{{ product.categoryName }}</p>
+                    <h2 class="mt-1 text-lg font-extrabold text-[#0f2744]">{{ product.name }}</h2>
+                    <dl class="mt-3 space-y-1 text-sm text-slate-600">
+                        <div v-if="product.typeLabel"><span class="font-semibold text-slate-500">Type </span>{{ product.typeLabel }}</div>
+                        <div v-if="product.size"><span class="font-semibold text-slate-500">Size </span>{{ product.size }}</div>
+                        <div v-if="product.color"><span class="font-semibold text-slate-500">Color </span>{{ product.color }}</div>
+                        <div v-if="product.material"><span class="font-semibold text-slate-500">Material </span>{{ product.material }}</div>
+                        <div v-if="product.thickness"><span class="font-semibold text-slate-500">Thickness </span>{{ product.thickness }}</div>
+                    </dl>
                     <p v-if="product.summary" class="mt-2 text-sm leading-6 text-slate-600">{{ product.summary }}</p>
-                    <Link :href="product.href" class="mt-4 inline-flex text-sm font-bold text-[#1d4ed8]">View details →</Link>
+                    <div class="mt-4 flex flex-wrap gap-3">
+                        <Link :href="product.href" class="inline-flex text-sm font-bold text-[#1d4ed8]">View details →</Link>
+                        <Link :href="product.quoteHref" class="inline-flex rounded-full bg-[#1d4ed8] px-3 py-1.5 text-sm font-bold text-white">Request Quote</Link>
+                    </div>
                 </div>
             </article>
         </div>

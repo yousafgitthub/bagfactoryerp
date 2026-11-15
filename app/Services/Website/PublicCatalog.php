@@ -44,10 +44,20 @@ class PublicCatalog
     /**
      * @return list<array<string, mixed>>
      */
-    public function products(?string $category = null): array
+    public function products(?string $category = null, ?string $search = null): array
     {
+        $term = $this->searchTerm($search);
+
         $bags = $this->bagQuery()
             ->when($category, fn (Builder $query) => $query->where('public_category', $category))
+            ->when($term, function (Builder $query) use ($term) {
+                $query->where(function (Builder $inner) use ($term) {
+                    $inner->where('name', 'like', $term)
+                        ->orWhere('public_summary', 'like', $term)
+                        ->orWhere('size_label', 'like', $term)
+                        ->orWhere('bag_type', 'like', $term);
+                });
+            })
             ->with('color:id,name')
             ->orderBy('public_sort')
             ->orderBy('name')
@@ -55,6 +65,13 @@ class PublicCatalog
 
         $materials = $this->materialQuery()
             ->when($category, fn (Builder $query) => $query->where('public_category', $category))
+            ->when($term, function (Builder $query) use ($term) {
+                $query->where(function (Builder $inner) use ($term) {
+                    $inner->where('name', 'like', $term)
+                        ->orWhere('public_summary', 'like', $term);
+                });
+            })
+            ->with('category:id,name')
             ->orderBy('public_sort')
             ->orderBy('name')
             ->get();
@@ -84,6 +101,7 @@ class PublicCatalog
         $material = $this->materialQuery()
             ->where('public_category', $category)
             ->where('public_slug', $slug)
+            ->with('category:id,name')
             ->first();
 
         return $material ? $this->presentMaterial($material, true) : null;
@@ -141,13 +159,23 @@ class PublicCatalog
             'name' => $product->name,
             'slug' => $product->public_slug,
             'category' => $product->public_category,
+            'categoryName' => $this->categoryName($product->public_category),
             'summary' => $product->public_summary,
+            'size' => $product->size_label,
+            'color' => $product->color?->name,
+            'thickness' => $this->measure($product->thickness_micron, 'micron'),
+            'material' => null,
+            'typeLabel' => config('bag.bag_types')[$product->bag_type] ?? null,
             'imageUrl' => $product->public_image_path
                 ? route('website.public.media.catalog', ['source' => 'bag', 'slug' => $product->public_slug])
                 : null,
             'href' => route('website.public.products.show', [
                 'category' => $product->public_category,
                 'slug' => $product->public_slug,
+            ]),
+            'quoteHref' => route('website.public.quote', [
+                'category' => $product->public_category,
+                'product' => $product->public_slug,
             ]),
         ];
 
@@ -176,7 +204,13 @@ class PublicCatalog
             'name' => $material->name,
             'slug' => $material->public_slug,
             'category' => $material->public_category,
+            'categoryName' => $this->categoryName($material->public_category),
             'summary' => $material->public_summary,
+            'size' => null,
+            'color' => null,
+            'thickness' => null,
+            'material' => $material->category?->name,
+            'typeLabel' => null,
             'imageUrl' => $material->public_image_path
                 ? route('website.public.media.catalog', ['source' => 'material', 'slug' => $material->public_slug])
                 : null,
@@ -184,11 +218,17 @@ class PublicCatalog
                 'category' => $material->public_category,
                 'slug' => $material->public_slug,
             ]),
+            'quoteHref' => route('website.public.quote', [
+                'category' => $material->public_category,
+                'product' => $material->public_slug,
+            ]),
         ];
 
         if ($detailed) {
             $payload['description'] = $material->public_description;
-            $payload['specs'] = [];
+            $payload['specs'] = array_values(array_filter([
+                $this->spec('Material category', $material->category?->name),
+            ]));
         }
 
         return $payload;
@@ -205,6 +245,30 @@ class PublicCatalog
 
         return ['label' => $label, 'value' => (string) $value];
     }
+
+    private function categoryName(?string $slug): ?string
+    {
+        if ($slug === null || $slug === '') {
+            return null;
+        }
+
+        $this->categoryNames ??= WebsiteCategory::query()->pluck('name', 'slug')->all();
+
+        return $this->categoryNames[$slug] ?? $slug;
+    }
+
+    private function searchTerm(?string $search): ?string
+    {
+        $search = trim((string) $search);
+        if ($search === '') {
+            return null;
+        }
+
+        return '%'.addcslashes($search, '%_\\').'%';
+    }
+
+    /** @var array<string, string>|null */
+    private ?array $categoryNames = null;
 
     private function measure(mixed $value, string $unit): ?string
     {

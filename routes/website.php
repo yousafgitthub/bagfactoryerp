@@ -27,6 +27,7 @@ Route::post('/request-a-quote', [PublicEnquiryController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('website.public.quote.store');
 Route::get('/manufacturing', [PublicPageController::class, 'manufacturing'])->name('website.public.manufacturing');
+Route::get('/quality-control', [PublicPageController::class, 'quality'])->name('website.public.quality');
 Route::get('/gallery', [PublicPageController::class, 'gallery'])->name('website.public.gallery');
 Route::get('/contact', [PublicPageController::class, 'contact'])->name('website.public.contact');
 Route::post('/contact', [PublicEnquiryController::class, 'store'])

@@ -84,7 +84,7 @@ class DashboardDataService
             [
                 'key' => 'today_bag_production',
                 'label' => "Today's bag production",
-                'value' => $this->sumWhenTable('shopping_bag_batches', fn () => (int) DB::table('shopping_bag_batches')->whereDate('posted_at', $today)->sum('output_pieces')),
+                'value' => $this->sumWhenTable('bag_production_batches', fn () => (int) DB::table('bag_production_batches')->whereDate('posted_at', $today)->sum('good_quantity')),
                 'hint' => 'Posted batches',
             ],
             [
@@ -102,7 +102,7 @@ class DashboardDataService
             [
                 'key' => 'today_attendance',
                 'label' => "Today's attendance",
-                'value' => $this->countWhenTableExists('attendance_records', fn () => DB::table('attendance_records')->whereDate('attendance_date', $today)->count()),
+                'value' => $this->countWhenTableExists('attendances', fn () => DB::table('attendances')->whereDate('attendance_date', $today)->count()),
                 'hint' => 'Check-ins recorded',
             ],
             [
@@ -126,7 +126,7 @@ class DashboardDataService
             [
                 'key' => 'month_operating_expenses',
                 'label' => 'Month operating expenses',
-                'value' => $this->monthAmount('expenses', 'amount', $monthStart, $monthEnd),
+                'value' => $this->monthAmount('expenses', 'amount', $monthStart, $monthEnd, 'expense_date'),
                 'hint' => 'Posted operating expenses',
             ],
         ];
@@ -153,12 +153,12 @@ class DashboardDataService
     {
         $total = 0.0;
 
-        foreach (['dana_batch_wastes', 'shopping_bag_batch_wastes'] as $table) {
-            if (! $this->tableExists($table)) {
+        foreach (['dana_batch_wastes' => 'quantity', 'bag_batch_wastes' => 'quantity_kg'] as $table => $column) {
+            if (! $this->tableExists($table) || ! Schema::hasColumn($table, $column)) {
                 continue;
             }
 
-            $total += (float) DB::table($table)->whereDate('recorded_at', $today)->sum('quantity');
+            $total += (float) DB::table($table)->whereDate('recorded_at', $today)->sum($column);
         }
 
         return $total;
@@ -170,7 +170,7 @@ class DashboardDataService
     private function productionTrend(DashboardDateRange $range): array
     {
         $danaByDay = $this->sumColumnByDay('dana_batches', 'posted_at', 'output_kg', $range);
-        $bagsByDay = $this->sumColumnByDay('shopping_bag_batches', 'posted_at', 'output_pieces', $range);
+        $bagsByDay = $this->sumColumnByDay('bag_production_batches', 'posted_at', 'good_quantity', $range);
         $points = [];
 
         foreach ($range->days() as $day) {
@@ -241,10 +241,10 @@ class DashboardDataService
                 ->sum('output_kg');
         }
 
-        if ($this->tableExists('shopping_bag_batches')) {
-            $bags = (int) DB::table('shopping_bag_batches')
+        if ($this->tableExists('bag_production_batches')) {
+            $bags = (int) DB::table('bag_production_batches')
                 ->whereBetween('posted_at', [$range->start, $range->end])
-                ->sum('output_pieces');
+                ->sum('good_quantity');
         }
 
         return ['totals' => ['dana_kg' => $dana, 'bags_pcs' => $bags]];
@@ -484,19 +484,48 @@ class DashboardDataService
      */
     private function financialOverview(): array
     {
-        if (! $this->tableExists('gl_account_balances')) {
-            return [
-                'cash_on_hand' => null,
-                'receivables' => null,
-                'payables' => null,
-            ];
+        $empty = [
+            'cash_on_hand' => null,
+            'receivables' => null,
+            'payables' => null,
+        ];
+
+        if (! $this->tableExists('gl_journal_lines') || ! $this->tableExists('gl_journal_entries') || ! $this->tableExists('gl_accounts')) {
+            return $empty;
         }
 
-        return [
-            'cash_on_hand' => (float) DB::table('gl_account_balances')->where('account_code', 'cash')->value('balance'),
-            'receivables' => (float) DB::table('gl_account_balances')->where('account_code', 'ar')->value('balance'),
-            'payables' => (float) DB::table('gl_account_balances')->where('account_code', 'ap')->value('balance'),
+        $codes = [
+            'cash_on_hand' => (string) config('accounting.account_codes.cash'),
+            'receivables' => (string) config('accounting.account_codes.accounts_receivable'),
+            'payables' => (string) config('accounting.account_codes.accounts_payable'),
         ];
+
+        $rows = DB::table('gl_journal_lines')
+            ->join('gl_accounts', 'gl_accounts.id', '=', 'gl_journal_lines.gl_account_id')
+            ->join('gl_journal_entries', 'gl_journal_entries.id', '=', 'gl_journal_lines.gl_journal_entry_id')
+            ->where('gl_journal_entries.status', 'posted')
+            ->whereIn('gl_accounts.code', array_values($codes))
+            ->groupBy('gl_accounts.code', 'gl_accounts.normal_balance')
+            ->selectRaw('gl_accounts.code as code, gl_accounts.normal_balance as normal_balance, SUM(gl_journal_lines.debit) as debit, SUM(gl_journal_lines.credit) as credit')
+            ->get()
+            ->keyBy(fn ($row) => (string) $row->code);
+
+        $overview = [];
+
+        foreach ($codes as $key => $code) {
+            $row = $rows->get($code);
+            if ($row === null) {
+                $overview[$key] = 0.0;
+
+                continue;
+            }
+
+            $overview[$key] = $row->normal_balance === 'debit'
+                ? round((float) $row->debit - (float) $row->credit, 2)
+                : round((float) $row->credit - (float) $row->debit, 2);
+        }
+
+        return $overview;
     }
 
     /**

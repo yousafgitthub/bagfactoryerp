@@ -35,6 +35,7 @@ class PublicWebsiteTest extends TestCase
             'website.public.custom-order',
             'website.public.quote',
             'website.public.manufacturing',
+            'website.public.quality',
             'website.public.gallery',
             'website.public.contact',
             'website.public.testimonials',
@@ -45,6 +46,13 @@ class PublicWebsiteTest extends TestCase
         }
 
         $this->get(route('website.public.products.category', 'shopping-bags'))->assertOk();
+        $this->get(route('website.public.quality'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Website/Quality')
+                ->where('notice', 'Demonstration process only. This is not a certification, an audit result, or a statement of factory practice.')
+                ->has('steps', 4))
+            ->assertDontSee('ISO');
 
         $this->get(route('website.public.home'))
             ->assertInertia(fn ($page) => $page
@@ -156,6 +164,17 @@ class PublicWebsiteTest extends TestCase
             'artwork' => UploadedFile::fake()->create('shell.php', 20, 'application/x-httpd-php'),
         ])->assertSessionHasErrors('artwork');
 
+        $this->post(route('website.public.custom-order.store'), [
+            'idempotency_token' => $this->token('website.public.custom-order'),
+            'name' => 'Ayesha Khan',
+            'email' => 'ayesha@example.com',
+            'phone' => '03001234567',
+            'bag_type' => 'loop_handle',
+            'size' => '12 x 16',
+            'quantity' => 500,
+            'artwork' => UploadedFile::fake()->create('logo.svg', 20, 'image/svg+xml'),
+        ])->assertSessionHasErrors('artwork');
+
         $this->assertSame(0, WebsiteEnquiry::query()->count());
         Storage::disk('local')->assertDirectoryEmpty('website/enquiries');
     }
@@ -207,6 +226,59 @@ class PublicWebsiteTest extends TestCase
         ])->assertRedirect();
 
         $this->assertSame(1, WebsiteEnquiry::query()->count());
+    }
+
+    public function test_demo_public_product_is_visible_and_quote_is_stored(): void
+    {
+        [$unit] = $this->masters();
+
+        BagProduct::query()->create([
+            'code' => 'DEMO-BAG-QUOTE',
+            'name' => 'DEMO Quote Bag',
+            'bag_type' => 't_shirt',
+            'size_label' => '300 x 450 mm',
+            'thickness_micron' => 40,
+            'unit_of_measurement_id' => $unit->id,
+            'selling_price' => 99,
+            'status' => 'active',
+            'is_public' => true,
+            'public_slug' => 'demo-quote-bag',
+            'public_category' => 'shopping-bags',
+            'public_summary' => 'Sample catalog text for the demo quote bag.',
+            'public_description' => 'Sample catalog text. No minimum order is stored on this product.',
+        ]);
+
+        $this->get(route('website.public.products', ['q' => 'DEMO Quote']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Website/Products/Index')
+                ->where('search', 'DEMO Quote')
+                ->where('products.0.name', 'DEMO Quote Bag')
+                ->where('products.0.size', '300 x 450 mm')
+                ->where('products.0.quoteHref', route('website.public.quote', [
+                    'category' => 'shopping-bags',
+                    'product' => 'demo-quote-bag',
+                ])))
+            ->assertDontSee('99')
+            ->assertDontSee('selling_price');
+
+        $token = $this->token('website.public.quote');
+
+        $this->post(route('website.public.quote.store'), [
+            'idempotency_token' => $token,
+            'name' => 'Demo Buyer',
+            'email' => 'demo.buyer@example.com',
+            'phone' => '03001112233',
+            'category' => 'shopping-bags',
+            'product_slug' => 'demo-quote-bag',
+            'message' => 'Sample quote request for the demo bag.',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('website_enquiries', [
+            'type' => 'quote',
+            'email' => 'demo.buyer@example.com',
+            'product_label' => 'DEMO Quote Bag',
+        ]);
     }
 
     public function test_authorised_staff_can_review_enquiries_and_guests_cannot(): void

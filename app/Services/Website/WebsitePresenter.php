@@ -26,6 +26,7 @@ class WebsitePresenter
             ['label' => 'About Us', 'href' => route('website.public.about'), 'match' => 'about'],
             ['label' => 'Products', 'href' => route('website.public.products'), 'match' => 'products'],
             ['label' => 'Manufacturing', 'href' => route('website.public.manufacturing'), 'match' => 'manufacturing'],
+            ['label' => 'Quality Control', 'href' => route('website.public.quality'), 'match' => 'quality'],
             ['label' => 'Gallery', 'href' => route('website.public.gallery'), 'match' => 'gallery'],
         ];
 
