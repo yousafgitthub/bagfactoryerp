@@ -1,3 +1,116 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        color-scheme: light;
+        --erp-bg: 241 245 249;
+        --erp-surface: 255 255 255;
+        --erp-surface-muted: 248 250 252;
+        --erp-border: 226 232 240;
+        --erp-text: 15 23 42;
+        --erp-text-muted: 100 116 139;
+        --erp-primary: 30 64 175;
+        --erp-primary-foreground: 255 255 255;
+        --erp-sidebar: 15 23 42;
+        --erp-sidebar-border: 30 41 59;
+        --erp-focus: 59 130 246;
+        --erp-success: 22 163 74;
+        --erp-warning: 217 119 6;
+        --erp-danger: 220 38 38;
+        --erp-info: 2 132 199;
+    }
+
+    html.dark {
+        color-scheme: dark;
+        --erp-bg: 15 23 42;
+        --erp-surface: 30 41 59;
+        --erp-surface-muted: 51 65 85;
+        --erp-border: 51 65 85;
+        --erp-text: 248 250 252;
+        --erp-text-muted: 148 163 184;
+        --erp-primary: 96 165 250;
+        --erp-primary-foreground: 15 23 42;
+        --erp-sidebar: 2 6 23;
+        --erp-sidebar-border: 30 41 59;
+        --erp-focus: 147 197 253;
+        --erp-success: 74 222 128;
+        --erp-warning: 251 191 36;
+        --erp-danger: 248 113 113;
+        --erp-info: 56 189 248;
+    }
+
+    body {
+        @apply antialiased;
+        background-color: rgb(var(--erp-bg));
+        color: rgb(var(--erp-text));
+    }
+}
+
+@layer components {
+    .erp-shell {
+        @apply min-h-screen;
+        background-color: rgb(var(--erp-bg));
+        color: rgb(var(--erp-text));
+    }
+
+    .erp-surface {
+        background-color: rgb(var(--erp-surface));
+        border-color: rgb(var(--erp-border));
+    }
+
+    .erp-content {
+        @apply mx-auto w-full max-w-7xl;
+    }
+
+    .erp-card {
+        @apply rounded-lg border shadow-sm;
+        background-color: rgb(var(--erp-surface));
+        border-color: rgb(var(--erp-border));
+    }
+
+    .erp-input {
+        @apply block w-full rounded-md border text-sm shadow-sm transition;
+        border-color: rgb(var(--erp-border));
+        background-color: rgb(var(--erp-surface));
+        color: rgb(var(--erp-text));
+    }
+
+    .erp-input:focus {
+        @apply outline-none ring-2 ring-offset-2;
+        --tw-ring-color: rgb(var(--erp-focus));
+    }
+
+    .erp-btn-primary {
+        @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold shadow-sm transition;
+        background-color: rgb(var(--erp-primary));
+        color: rgb(var(--erp-primary-foreground));
+    }
+
+    .erp-btn-primary:hover {
+        filter: brightness(1.05);
+    }
+
+    .erp-btn-secondary {
+        @apply inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm transition;
+        border-color: rgb(var(--erp-border));
+        background-color: rgb(var(--erp-surface));
+        color: rgb(var(--erp-text));
+    }
+
+    .erp-btn-secondary:hover {
+        background-color: rgb(var(--erp-surface-muted));
+    }
+
+    .erp-btn-danger {
+        @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm transition;
+        background-color: rgb(var(--erp-danger));
+    }
+
+    .erp-table-head {
+        @apply text-left text-xs font-semibold uppercase tracking-wide;
+        color: rgb(var(--erp-text-muted));
+        background-color: rgb(var(--erp-surface-muted));
+    }
+}
