@@ -27,6 +27,7 @@ return [
         'expenses' => ['label' => 'Expenses', 'route' => 'erp.expenses'],
         'accounting' => ['label' => 'Accounting', 'route' => 'erp.accounting'],
         'reports' => ['label' => 'Reports', 'route' => 'erp.reports'],
+        'website' => ['label' => 'Website', 'route' => 'website.admin.hub'],
         'settings' => ['label' => 'Settings', 'route' => 'erp.settings'],
     ],
 
@@ -55,6 +56,7 @@ return [
             'customers.view', 'customers.manage',
             'expenses.view',
             'reports.view',
+            'website.view', 'website.manage',
             'settings.view',
         ],
         'production-manager' => [
@@ -80,6 +82,7 @@ return [
             'expenses.view', 'expenses.manage',
             'accounting.view', 'accounting.manage',
             'reports.view',
+            'website.view',
         ],
         'hr-manager' => [
             'dashboard.view',

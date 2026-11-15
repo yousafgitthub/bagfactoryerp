@@ -22,6 +22,13 @@ class Material extends Model
         'supports_variants',
         'description',
         'status',
+        'is_public',
+        'public_slug',
+        'public_category',
+        'public_summary',
+        'public_description',
+        'public_image_path',
+        'public_sort',
     ];
 
     protected function casts(): array
@@ -30,6 +37,8 @@ class Material extends Model
             'default_unit_cost' => 'decimal:4',
             'reorder_level' => 'decimal:4',
             'supports_variants' => 'boolean',
+            'is_public' => 'boolean',
+            'public_sort' => 'integer',
         ];
     }
 

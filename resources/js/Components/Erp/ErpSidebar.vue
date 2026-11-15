@@ -37,6 +37,7 @@ const icons = {
     expenses: 'receipt',
     accounting: 'building',
     reports: 'chart',
+    website: 'globe',
     settings: 'settings',
 };
 

@@ -22,6 +22,13 @@ class BagProduct extends Model
         'selling_price',
         'status',
         'description',
+        'is_public',
+        'public_slug',
+        'public_category',
+        'public_summary',
+        'public_description',
+        'public_image_path',
+        'public_sort',
     ];
 
     protected function casts(): array
@@ -32,6 +39,8 @@ class BagProduct extends Model
             'thickness_micron' => 'decimal:2',
             'nominal_weight_per_bag_g' => 'decimal:4',
             'selling_price' => 'decimal:4',
+            'is_public' => 'boolean',
+            'public_sort' => 'integer',
         ];
     }
 

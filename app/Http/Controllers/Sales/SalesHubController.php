@@ -13,6 +13,47 @@ class SalesHubController extends Controller
     {
         $this->authorize('viewModule', 'sales');
 
+        $links = [
+            [
+                'href' => route('sales.orders.index'),
+                'label' => 'Sales orders',
+                'description' => 'Customer orders before invoicing.',
+            ],
+            [
+                'href' => route('sales.invoices.index'),
+                'label' => 'Sales invoices',
+                'description' => 'Post invoices — deducts finished stock and records COGS (WAC).',
+            ],
+            [
+                'href' => route('sales.receipts.index'),
+                'label' => 'Customer receipts',
+                'description' => 'Cash and bank collections against invoices.',
+            ],
+            [
+                'href' => route('sales.returns.index'),
+                'label' => 'Sales returns',
+                'description' => 'Returns with saleable vs damaged disposition.',
+            ],
+            [
+                'href' => route('sales.reports.outstanding'),
+                'label' => 'Outstanding receivables',
+                'description' => 'Open invoices and customer balances.',
+            ],
+            [
+                'href' => route('sales.reports.summary'),
+                'label' => 'Sales summary',
+                'description' => 'Posted revenue, tax and COGS.',
+            ],
+        ];
+
+        if ($request->user()?->can('website.view')) {
+            $links[] = [
+                'href' => route('website.admin.enquiries.index'),
+                'label' => 'Website enquiries',
+                'description' => 'Quotes, custom orders, and contact messages from the public site.',
+            ];
+        }
+
         return Inertia::render('Sales/Hub', [
             'pageTitle' => 'Sales',
             'breadcrumbs' => [
@@ -20,38 +61,7 @@ class SalesHubController extends Controller
                 ['label' => 'Sales'],
             ],
             'costingMethod' => config('sales.costing_method'),
-            'links' => [
-                [
-                    'href' => route('sales.orders.index'),
-                    'label' => 'Sales orders',
-                    'description' => 'Customer orders before invoicing.',
-                ],
-                [
-                    'href' => route('sales.invoices.index'),
-                    'label' => 'Sales invoices',
-                    'description' => 'Post invoices — deducts finished stock and records COGS (WAC).',
-                ],
-                [
-                    'href' => route('sales.receipts.index'),
-                    'label' => 'Customer receipts',
-                    'description' => 'Cash and bank collections against invoices.',
-                ],
-                [
-                    'href' => route('sales.returns.index'),
-                    'label' => 'Sales returns',
-                    'description' => 'Returns with saleable vs damaged disposition.',
-                ],
-                [
-                    'href' => route('sales.reports.outstanding'),
-                    'label' => 'Outstanding receivables',
-                    'description' => 'Open invoices and customer balances.',
-                ],
-                [
-                    'href' => route('sales.reports.summary'),
-                    'label' => 'Sales summary',
-                    'description' => 'Posted revenue, tax and COGS.',
-                ],
-            ],
+            'links' => $links,
             'canManage' => $request->user()?->can('sales.manage') === true,
         ]);
     }

@@ -30,6 +30,20 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        if ($request->routeIs('website.public.*')) {
+            return [
+                ...parent::share($request),
+                'auth' => ['user' => null],
+                'navigation' => [],
+                'flash' => [
+                    'status' => fn () => $request->session()->get('status'),
+                ],
+                'appName' => config('app.name'),
+                'notifications' => [],
+                'website' => fn () => app(\App\Services\Website\WebsitePresenter::class)->shared(),
+            ];
+        }
+
         $user = $request->user();
 
         return [
