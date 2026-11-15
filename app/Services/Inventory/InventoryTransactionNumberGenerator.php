@@ -19,6 +19,9 @@ class InventoryTransactionNumberGenerator
             'warehouse_transfer' => 'TR',
             'waste_receipt' => 'WS',
             'production_receipt' => 'PO',
+            'sales_issue' => 'SL',
+            'sales_return_saleable' => 'SRS',
+            'sales_return_rejected' => 'SRR',
             'reversal' => 'REV',
             default => 'INV',
         };

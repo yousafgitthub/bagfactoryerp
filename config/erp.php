@@ -35,6 +35,7 @@ return [
         'payroll.approve',
         'accounting.approve-financial-statements',
         'settings.manage',
+        'sales.oversell',
     ],
 
     'role_permissions' => [
@@ -50,8 +51,8 @@ return [
             'payroll.view',
             'purchases.view', 'purchases.manage',
             'suppliers.view', 'suppliers.manage',
-            'sales.view',
-            'customers.view',
+            'sales.view', 'sales.manage', 'sales.oversell',
+            'customers.view', 'customers.manage',
             'expenses.view',
             'reports.view',
             'settings.view',

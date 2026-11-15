@@ -17,6 +17,9 @@ return [
         'waste_receipt' => 'Waste stock receipt',
         'production_receipt' => 'Production output receipt',
         'purchase_return' => 'Purchase return to supplier',
+        'sales_issue' => 'Sales issue (finished goods)',
+        'sales_return_saleable' => 'Sales return (saleable)',
+        'sales_return_rejected' => 'Sales return (rejected / damaged)',
         'reversal' => 'Reversal',
     ],
 

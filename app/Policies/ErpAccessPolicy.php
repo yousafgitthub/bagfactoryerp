@@ -82,4 +82,14 @@ class ErpAccessPolicy
     {
         return $user->can('suppliers.manage');
     }
+
+    public function manageSales(User $user): bool
+    {
+        return $user->can('sales.manage');
+    }
+
+    public function manageCustomers(User $user): bool
+    {
+        return $user->can('customers.manage');
+    }
 }

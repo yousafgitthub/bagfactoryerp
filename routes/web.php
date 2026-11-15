@@ -43,6 +43,14 @@ use App\Http\Controllers\Purchases\PurchaseReturnController;
 use App\Http\Controllers\Purchases\SupplierController;
 use App\Http\Controllers\Purchases\SupplierHubController;
 use App\Http\Controllers\Purchases\SupplierPaymentController;
+use App\Http\Controllers\Sales\CustomerController;
+use App\Http\Controllers\Sales\CustomerHubController;
+use App\Http\Controllers\Sales\CustomerReceiptController;
+use App\Http\Controllers\Sales\SalesHubController;
+use App\Http\Controllers\Sales\SalesInvoiceController;
+use App\Http\Controllers\Sales\SalesOrderController;
+use App\Http\Controllers\Sales\SalesReportController;
+use App\Http\Controllers\Sales\SalesReturnController;
 use App\Http\Controllers\SettingsHubController;
 use Illuminate\Support\Facades\Route;
 
@@ -455,9 +463,89 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('purchases.suppliers.update');
     });
 
+    Route::middleware('permission:sales.view')->prefix('sales')->group(function () {
+        Route::get('/', SalesHubController::class)->name('erp.sales');
+
+        Route::get('/orders', [SalesOrderController::class, 'index'])->name('sales.orders.index');
+        Route::get('/orders/create', [SalesOrderController::class, 'create'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.orders.create');
+        Route::post('/orders', [SalesOrderController::class, 'store'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.orders.store');
+        Route::get('/orders/{salesOrder}', [SalesOrderController::class, 'show'])->name('sales.orders.show');
+        Route::get('/orders/{salesOrder}/edit', [SalesOrderController::class, 'edit'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.orders.edit');
+        Route::put('/orders/{salesOrder}', [SalesOrderController::class, 'update'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.orders.update');
+        Route::post('/orders/{salesOrder}/confirm', [SalesOrderController::class, 'confirm'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.orders.confirm');
+        Route::post('/orders/{salesOrder}/invoices', [SalesOrderController::class, 'storeInvoice'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.orders.invoices.store');
+
+        Route::get('/invoices', [SalesInvoiceController::class, 'index'])->name('sales.invoices.index');
+        Route::get('/invoices/create', [SalesInvoiceController::class, 'create'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.invoices.create');
+        Route::post('/invoices', [SalesInvoiceController::class, 'store'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.invoices.store');
+        Route::get('/invoices/{salesInvoice}', [SalesInvoiceController::class, 'show'])->name('sales.invoices.show');
+        Route::get('/invoices/{salesInvoice}/print', [SalesInvoiceController::class, 'print'])->name('sales.invoices.print');
+        Route::post('/invoices/{salesInvoice}/post', [SalesInvoiceController::class, 'post'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.invoices.post');
+
+        Route::get('/receipts', [CustomerReceiptController::class, 'index'])->name('sales.receipts.index');
+        Route::get('/receipts/create', [CustomerReceiptController::class, 'create'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.receipts.create');
+        Route::post('/receipts', [CustomerReceiptController::class, 'store'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.receipts.store');
+
+        Route::get('/returns', [SalesReturnController::class, 'index'])->name('sales.returns.index');
+        Route::get('/returns/create', [SalesReturnController::class, 'create'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.returns.create');
+        Route::post('/returns', [SalesReturnController::class, 'store'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.returns.store');
+        Route::get('/returns/{salesReturn}', [SalesReturnController::class, 'show'])->name('sales.returns.show');
+        Route::post('/returns/{salesReturn}/post', [SalesReturnController::class, 'post'])
+            ->middleware('permission:sales.manage')
+            ->name('sales.returns.post');
+
+        Route::get('/reports/outstanding', [SalesReportController::class, 'outstanding'])
+            ->name('sales.reports.outstanding');
+        Route::get('/reports/summary', [SalesReportController::class, 'summary'])
+            ->name('sales.reports.summary');
+    });
+
+    Route::middleware('permission:customers.view')->prefix('customers')->group(function () {
+        Route::get('/', CustomerHubController::class)->name('erp.customers');
+
+        Route::get('/list', [CustomerController::class, 'index'])->name('sales.customers.index');
+        Route::get('/create', [CustomerController::class, 'create'])
+            ->middleware('permission:customers.manage')
+            ->name('sales.customers.create');
+        Route::post('/', [CustomerController::class, 'store'])
+            ->middleware('permission:customers.manage')
+            ->name('sales.customers.store');
+        Route::get('/{customer}', [CustomerController::class, 'show'])->name('sales.customers.show');
+        Route::get('/{customer}/edit', [CustomerController::class, 'edit'])
+            ->middleware('permission:customers.manage')
+            ->name('sales.customers.edit');
+        Route::put('/{customer}', [CustomerController::class, 'update'])
+            ->middleware('permission:customers.manage')
+            ->name('sales.customers.update');
+    });
+
     $moduleRoutes = [
-        'sales' => 'erp.sales',
-        'customers' => 'erp.customers',
         'expenses' => 'erp.expenses',
         'accounting' => 'erp.accounting',
         'reports' => 'erp.reports',
