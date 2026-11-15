@@ -31,6 +31,11 @@ class ErpAccessPolicy
         return $user->can('inventory.manage');
     }
 
+    public function manageDanaProduction(User $user): bool
+    {
+        return $user->can('dana-production.manage');
+    }
+
     public function approvePayroll(User $user): bool
     {
         return $user->can('payroll.approve');

@@ -17,6 +17,7 @@ class InventoryTransactionNumberGenerator
             'adjustment' => 'ADJ',
             'warehouse_transfer' => 'TR',
             'waste_receipt' => 'WS',
+            'production_receipt' => 'PO',
             'reversal' => 'REV',
             default => 'INV',
         };

@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Dana\DanaBatchController;
+use App\Http\Controllers\Dana\DanaCostingReportController;
+use App\Http\Controllers\Dana\DanaHubController;
+use App\Http\Controllers\Dana\DanaRecipeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Inventory\InventoryBalanceController;
 use App\Http\Controllers\Inventory\InventoryHubController;
@@ -86,8 +90,52 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('inventory.transactions.reverse');
     });
 
+    Route::middleware('permission:dana-production.view')->prefix('dana-production')->group(function () {
+        Route::get('/', DanaHubController::class)->name('erp.dana-production');
+
+        Route::get('/batches', [DanaBatchController::class, 'index'])->name('dana.batches.index');
+        Route::get('/batches/create', [DanaBatchController::class, 'create'])
+            ->middleware('permission:dana-production.manage')
+            ->name('dana.batches.create');
+        Route::post('/batches', [DanaBatchController::class, 'store'])
+            ->middleware('permission:dana-production.manage')
+            ->name('dana.batches.store');
+        Route::get('/batches/{batch}', [DanaBatchController::class, 'show'])->name('dana.batches.show');
+        Route::get('/batches/{batch}/edit', [DanaBatchController::class, 'edit'])
+            ->middleware('permission:dana-production.manage')
+            ->name('dana.batches.edit');
+        Route::put('/batches/{batch}', [DanaBatchController::class, 'update'])
+            ->middleware('permission:dana-production.manage')
+            ->name('dana.batches.update');
+        Route::post('/batches/{batch}/workflow/{action}', [DanaBatchController::class, 'workflow'])
+            ->middleware('permission:dana-production.manage')
+            ->name('dana.batches.workflow');
+        Route::post('/batches/{batch}/post', [DanaBatchController::class, 'post'])
+            ->middleware('permission:dana-production.manage')
+            ->name('dana.batches.post');
+        Route::post('/batches/{batch}/reverse', [DanaBatchController::class, 'reverse'])
+            ->middleware('permission:dana-production.manage')
+            ->name('dana.batches.reverse');
+        Route::get('/batches/{batch}/print', [DanaBatchController::class, 'print'])->name('dana.batches.print');
+
+        Route::get('/recipes', [DanaRecipeController::class, 'index'])->name('dana.recipes.index');
+        Route::get('/recipes/create', [DanaRecipeController::class, 'create'])
+            ->middleware('permission:dana-production.manage')
+            ->name('dana.recipes.create');
+        Route::post('/recipes', [DanaRecipeController::class, 'store'])
+            ->middleware('permission:dana-production.manage')
+            ->name('dana.recipes.store');
+        Route::get('/recipes/{recipe}/edit', [DanaRecipeController::class, 'edit'])
+            ->middleware('permission:dana-production.manage')
+            ->name('dana.recipes.edit');
+        Route::put('/recipes/{recipe}', [DanaRecipeController::class, 'update'])
+            ->middleware('permission:dana-production.manage')
+            ->name('dana.recipes.update');
+
+        Route::get('/reports/costing', DanaCostingReportController::class)->name('dana.reports.costing');
+    });
+
     $moduleRoutes = [
-        'dana-production' => 'erp.dana-production',
         'shopping-bag-production' => 'erp.shopping-bag-production',
         'employees' => 'erp.employees',
         'attendance' => 'erp.attendance',

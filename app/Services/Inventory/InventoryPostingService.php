@@ -34,7 +34,7 @@ class InventoryPostingService
                 throw new InventoryPostingException('Transaction already has ledger entries.');
             }
 
-            if ($locked->items->isEmpty()) {
+            if ($locked->items->isEmpty() && $locked->type !== 'reversal') {
                 throw new InventoryPostingException('Transaction has no line items.');
             }
 
@@ -88,7 +88,7 @@ class InventoryPostingService
                 occurredAt: $occurredAt,
                 actor: $actor,
                 reference: $transaction->transaction_number,
-                recordLot: in_array($transaction->type, ['purchase_receipt', 'opening_stock', 'waste_receipt', 'return_unused'], true),
+                recordLot: in_array($transaction->type, ['purchase_receipt', 'opening_stock', 'waste_receipt', 'return_unused', 'production_receipt'], true),
             );
         }
     }
@@ -320,7 +320,7 @@ class InventoryPostingService
     {
         return match ($type) {
             'issue_to_production' => -abs($quantity),
-            'opening_stock', 'purchase_receipt', 'return_unused', 'waste_receipt' => abs($quantity),
+            'opening_stock', 'purchase_receipt', 'return_unused', 'waste_receipt', 'production_receipt' => abs($quantity),
             default => $quantity,
         };
     }
@@ -333,6 +333,7 @@ class InventoryPostingService
             'purchase_receipt' => 'receipt',
             'return_unused' => 'return',
             'waste_receipt' => 'waste',
+            'production_receipt' => 'production',
             default => $signedQty >= 0 ? 'receipt' : 'issue',
         };
     }
