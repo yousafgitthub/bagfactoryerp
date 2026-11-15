@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\Bag\BagBatchController;
+use App\Http\Controllers\Bag\BagBomController;
+use App\Http\Controllers\Bag\BagHubController;
+use App\Http\Controllers\Bag\BagOrderController;
+use App\Http\Controllers\Bag\BagProductController;
+use App\Http\Controllers\Bag\BagReportController;
 use App\Http\Controllers\Dana\DanaBatchController;
 use App\Http\Controllers\Dana\DanaCostingReportController;
 use App\Http\Controllers\Dana\DanaHubController;
@@ -135,8 +141,89 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/reports/costing', DanaCostingReportController::class)->name('dana.reports.costing');
     });
 
+    Route::middleware('permission:shopping-bag-production.view')->prefix('shopping-bag-production')->group(function () {
+        Route::get('/', BagHubController::class)->name('erp.shopping-bag-production');
+
+        Route::get('/products', [BagProductController::class, 'index'])->name('bag.products.index');
+        Route::get('/products/create', [BagProductController::class, 'create'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.products.create');
+        Route::post('/products', [BagProductController::class, 'store'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.products.store');
+        Route::get('/products/{product}/edit', [BagProductController::class, 'edit'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.products.edit');
+        Route::put('/products/{product}', [BagProductController::class, 'update'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.products.update');
+
+        Route::get('/bom', [BagBomController::class, 'index'])->name('bag.bom.index');
+        Route::get('/bom/create', [BagBomController::class, 'create'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.bom.create');
+        Route::post('/bom', [BagBomController::class, 'store'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.bom.store');
+        Route::get('/bom/{bom}/edit', [BagBomController::class, 'edit'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.bom.edit');
+        Route::put('/bom/{bom}', [BagBomController::class, 'update'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.bom.update');
+        Route::post('/bom/{bom}/new-version', [BagBomController::class, 'newVersion'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.bom.new-version');
+
+        Route::get('/orders', [BagOrderController::class, 'index'])->name('bag.orders.index');
+        Route::get('/orders/create', [BagOrderController::class, 'create'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.orders.create');
+        Route::post('/orders', [BagOrderController::class, 'store'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.orders.store');
+        Route::get('/orders/{order}', [BagOrderController::class, 'show'])->name('bag.orders.show');
+        Route::get('/orders/{order}/edit', [BagOrderController::class, 'edit'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.orders.edit');
+        Route::put('/orders/{order}', [BagOrderController::class, 'update'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.orders.update');
+        Route::post('/orders/{order}/workflow/{action}', [BagOrderController::class, 'workflow'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.orders.workflow');
+
+        Route::get('/batches', [BagBatchController::class, 'index'])->name('bag.batches.index');
+        Route::get('/batches/create', [BagBatchController::class, 'create'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.batches.create');
+        Route::post('/batches', [BagBatchController::class, 'store'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.batches.store');
+        Route::get('/batches/{batch}', [BagBatchController::class, 'show'])->name('bag.batches.show');
+        Route::get('/batches/{batch}/edit', [BagBatchController::class, 'edit'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.batches.edit');
+        Route::put('/batches/{batch}', [BagBatchController::class, 'update'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.batches.update');
+        Route::post('/batches/{batch}/workflow/{action}', [BagBatchController::class, 'workflow'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.batches.workflow');
+        Route::post('/batches/{batch}/post', [BagBatchController::class, 'post'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.batches.post');
+        Route::post('/batches/{batch}/reverse', [BagBatchController::class, 'reverse'])
+            ->middleware('permission:shopping-bag-production.manage')
+            ->name('bag.batches.reverse');
+
+        Route::get('/reports/costing', [BagReportController::class, 'costing'])->name('bag.reports.costing');
+        Route::get('/reports/planning', [BagReportController::class, 'planning'])->name('bag.reports.planning');
+        Route::get('/reports/machine-output', [BagReportController::class, 'machineOutput'])->name('bag.reports.machine');
+        Route::get('/reports/finished-stock', [BagReportController::class, 'finishedStock'])->name('bag.reports.finished-stock');
+    });
+
     $moduleRoutes = [
-        'shopping-bag-production' => 'erp.shopping-bag-production',
         'employees' => 'erp.employees',
         'attendance' => 'erp.attendance',
         'payroll' => 'erp.payroll',

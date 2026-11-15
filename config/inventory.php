@@ -23,6 +23,7 @@ return [
         'raw' => 'Raw materials',
         'dana' => 'Dana',
         'finished_bag' => 'Finished bags',
+        'rejected_bag' => 'Rejected bags (non-saleable)',
         'other' => 'Other',
     ],
 ];

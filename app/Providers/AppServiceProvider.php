@@ -31,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('viewModule', fn (User $user, string $module) => $policy->viewModule($user, $module));
         Gate::define('manageInventory', fn (User $user) => $policy->manageInventory($user));
         Gate::define('manageDanaProduction', fn (User $user) => $policy->manageDanaProduction($user));
+        Gate::define('manageBagProduction', fn (User $user) => $policy->manageBagProduction($user));
         Gate::define('approvePayroll', fn (User $user) => $policy->approvePayroll($user));
         Gate::define('approveFinancialStatements', fn (User $user) => $policy->approveFinancialStatements($user));
     }
