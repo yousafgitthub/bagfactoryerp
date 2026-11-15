@@ -8,6 +8,7 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderLine;
 use App\Models\SupplierLedgerEntry;
 use App\Models\User;
+use App\Services\Accounting\AccountingIntegrationService;
 use Illuminate\Support\Facades\DB;
 
 class PurchaseInvoiceService
@@ -16,6 +17,7 @@ class PurchaseInvoiceService
         private readonly PurchaseDocumentNumberGenerator $numbers,
         private readonly PurchaseLineCalculator $calculator,
         private readonly SupplierLedgerService $ledger,
+        private readonly AccountingIntegrationService $accounting,
     ) {
     }
 
@@ -125,6 +127,8 @@ class PurchaseInvoiceService
                 amount: (float) $locked->grand_total,
                 actor: $actor,
             );
+
+            $this->accounting->postPurchaseInvoice($locked->fresh(), $actor);
 
             return $locked->fresh();
         });

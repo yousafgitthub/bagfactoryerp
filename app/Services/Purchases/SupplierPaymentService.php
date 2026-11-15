@@ -7,6 +7,7 @@ use App\Models\Supplier;
 use App\Models\SupplierPayment;
 use App\Models\SupplierPaymentAllocation;
 use App\Models\User;
+use App\Services\Accounting\AccountingIntegrationService;
 use Illuminate\Support\Facades\DB;
 
 class SupplierPaymentService
@@ -14,6 +15,7 @@ class SupplierPaymentService
     public function __construct(
         private readonly PurchaseDocumentNumberGenerator $numbers,
         private readonly SupplierLedgerService $ledger,
+        private readonly AccountingIntegrationService $accounting,
     ) {
     }
 
@@ -40,6 +42,7 @@ class SupplierPaymentService
                 'payment_date' => $header['payment_date'],
                 'amount' => $paymentAmount,
                 'payment_method' => $header['payment_method'] ?? 'cash',
+                'treasury_account_id' => $header['treasury_account_id'] ?? null,
                 'reference' => $header['reference'] ?? null,
                 'notes' => $header['notes'] ?? null,
                 'created_by' => $actor->id,
@@ -87,6 +90,8 @@ class SupplierPaymentService
                 amount: $paymentAmount,
                 actor: $actor,
             );
+
+            $this->accounting->postSupplierPayment($payment->fresh(), $actor);
 
             return $payment->fresh(['allocations.purchaseInvoice']);
         });

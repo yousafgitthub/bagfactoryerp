@@ -10,12 +10,14 @@ use App\Models\PayrollRecordLine;
 use App\Models\PayrollRun;
 use App\Models\User;
 use Carbon\Carbon;
+use App\Services\Accounting\AccountingIntegrationService;
 use Illuminate\Support\Facades\DB;
 
 class PayrollRunService
 {
     public function __construct(
-        private readonly PayrollCalculationService $calculator
+        private readonly PayrollCalculationService $calculator,
+        private readonly AccountingIntegrationService $accounting,
     ) {}
 
     public function createRun(Carbon $periodStart, Carbon $periodEnd, ?User $actor = null, ?string $notes = null): PayrollRun
@@ -158,7 +160,10 @@ class PayrollRunService
                 'approved_by' => $actor->id,
             ]);
 
-            return $this->syncRunTotals($run->fresh());
+            $run = $this->syncRunTotals($run->fresh());
+            $this->accounting->postPayrollAccrual($run, $actor);
+
+            return $run;
         });
     }
 

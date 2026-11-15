@@ -12,6 +12,7 @@ use App\Models\SalesInvoiceLine;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderLine;
 use App\Models\User;
+use App\Services\Accounting\AccountingIntegrationService;
 use App\Services\Inventory\InventoryPostingService;
 use App\Services\Inventory\InventoryTransactionNumberGenerator;
 use App\Services\Purchases\PurchaseLineCalculator;
@@ -28,6 +29,7 @@ class SalesInvoiceService
         private readonly CustomerLedgerService $ledger,
         private readonly CustomerReceiptService $receipts,
         private readonly SalesOrderService $orders,
+        private readonly AccountingIntegrationService $accounting,
     ) {
     }
 
@@ -193,6 +195,8 @@ class SalesInvoiceService
                 amount: (float) $locked->grand_total,
                 actor: $actor,
             );
+
+            $this->accounting->postSalesInvoice($locked->fresh(), $actor);
 
             $autoCash = $locked->sale_type === 'cash' || ($cashReceipt['record_immediately'] ?? false);
             if ($autoCash) {

@@ -9,6 +9,7 @@ use App\Models\PurchaseReturn;
 use App\Models\PurchaseReturnLine;
 use App\Models\Supplier;
 use App\Models\User;
+use App\Services\Accounting\AccountingIntegrationService;
 use App\Services\Inventory\InventoryPostingService;
 use App\Services\Inventory\InventoryTransactionNumberGenerator;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,7 @@ class PurchaseReturnService
         private readonly InventoryTransactionNumberGenerator $inventoryNumbers,
         private readonly InventoryPostingService $inventoryPosting,
         private readonly SupplierLedgerService $ledger,
+        private readonly AccountingIntegrationService $accounting,
     ) {
     }
 
@@ -131,6 +133,8 @@ class PurchaseReturnService
                 amount: (float) $locked->subtotal,
                 actor: $actor,
             );
+
+            $this->accounting->postPurchaseReturn($locked->fresh(), (float) $locked->subtotal, $actor);
 
             return $locked->fresh(['lines', 'inventoryTransaction']);
         });

@@ -3,11 +3,13 @@
 namespace App\Services\Sales;
 
 use App\Models\BagProductVariant;
+use App\Models\InventoryLedgerEntry;
 use App\Models\InventoryTransaction;
 use App\Models\InventoryTransactionItem;
 use App\Models\SalesReturn;
 use App\Models\SalesReturnLine;
 use App\Models\User;
+use App\Services\Accounting\AccountingIntegrationService;
 use App\Services\Inventory\InventoryPostingService;
 use App\Services\Inventory\InventoryTransactionNumberGenerator;
 use App\Services\Purchases\PurchaseLineCalculator;
@@ -21,6 +23,7 @@ class SalesReturnService
         private readonly InventoryTransactionNumberGenerator $inventoryNumbers,
         private readonly InventoryPostingService $inventoryPosting,
         private readonly CustomerLedgerService $ledger,
+        private readonly AccountingIntegrationService $accounting,
     ) {
     }
 
@@ -135,6 +138,16 @@ class SalesReturnService
                 amount: (float) $locked->grand_total,
                 actor: $actor,
             );
+
+            $cogs = 0.0;
+            if ($inventoryIds !== []) {
+                $cogs = (float) InventoryLedgerEntry::query()
+                    ->whereIn('inventory_transaction_id', $inventoryIds)
+                    ->where('quantity', '>', 0)
+                    ->sum('total_value');
+            }
+
+            $this->accounting->postSalesReturn($locked->fresh(), (float) $locked->grand_total, $cogs, $actor);
 
             return $locked->fresh(['lines', 'inventoryTransaction']);
         });

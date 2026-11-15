@@ -7,6 +7,7 @@ use App\Models\CustomerReceipt;
 use App\Models\CustomerReceiptAllocation;
 use App\Models\SalesInvoice;
 use App\Models\User;
+use App\Services\Accounting\AccountingIntegrationService;
 use Illuminate\Support\Facades\DB;
 
 class CustomerReceiptService
@@ -14,6 +15,7 @@ class CustomerReceiptService
     public function __construct(
         private readonly SalesDocumentNumberGenerator $numbers,
         private readonly CustomerLedgerService $ledger,
+        private readonly AccountingIntegrationService $accounting,
     ) {
     }
 
@@ -40,6 +42,7 @@ class CustomerReceiptService
                 'receipt_date' => $header['receipt_date'],
                 'amount' => $receiptAmount,
                 'payment_method' => $header['payment_method'] ?? 'cash',
+                'treasury_account_id' => $header['treasury_account_id'] ?? null,
                 'reference' => $header['reference'] ?? null,
                 'notes' => $header['notes'] ?? null,
                 'created_by' => $actor->id,
@@ -87,6 +90,8 @@ class CustomerReceiptService
                 amount: $receiptAmount,
                 actor: $actor,
             );
+
+            $this->accounting->postCustomerReceipt($receipt->fresh(), $actor);
 
             return $receipt->fresh(['allocations.salesInvoice']);
         });

@@ -9,6 +9,7 @@ use App\Models\InventoryTransactionItem;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderLine;
 use App\Models\User;
+use App\Services\Accounting\AccountingIntegrationService;
 use App\Services\Inventory\InventoryPostingService;
 use App\Services\Inventory\InventoryTransactionNumberGenerator;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,7 @@ class GoodsReceiptService
         private readonly InventoryTransactionNumberGenerator $inventoryNumbers,
         private readonly InventoryPostingService $inventoryPosting,
         private readonly PurchaseOrderService $purchaseOrders,
+        private readonly AccountingIntegrationService $accounting,
     ) {
     }
 
@@ -117,6 +119,8 @@ class GoodsReceiptService
             ]);
 
             $this->purchaseOrders->refreshReceiptStatus($locked->purchaseOrder->fresh('lines'));
+
+            $this->accounting->postGoodsReceipt($locked->fresh(['inventoryTransaction']), $actor);
 
             return $locked->fresh(['lines', 'inventoryTransaction']);
         });

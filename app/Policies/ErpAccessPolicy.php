@@ -92,4 +92,14 @@ class ErpAccessPolicy
     {
         return $user->can('customers.manage');
     }
+
+    public function manageExpenses(User $user): bool
+    {
+        return $user->can('expenses.manage');
+    }
+
+    public function manageAccounting(User $user): bool
+    {
+        return $user->can('accounting.manage');
+    }
 }

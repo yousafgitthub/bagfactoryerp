@@ -6,12 +6,14 @@ use App\Models\PayrollPayment;
 use App\Models\PayrollRecord;
 use App\Models\PayrollRun;
 use App\Models\User;
+use App\Services\Accounting\AccountingIntegrationService;
 use Illuminate\Support\Facades\DB;
 
 class PayrollPaymentService
 {
     public function __construct(
-        private readonly PayrollRunService $runService
+        private readonly PayrollRunService $runService,
+        private readonly AccountingIntegrationService $accounting,
     ) {}
 
     /**
@@ -39,6 +41,7 @@ class PayrollPaymentService
                 'payment_date' => $data['payment_date'],
                 'amount' => $amount,
                 'payment_method' => $data['payment_method'],
+                'treasury_account_id' => $data['treasury_account_id'] ?? null,
                 'reference' => $data['reference'] ?? null,
                 'notes' => $data['notes'] ?? null,
                 'recorded_by' => $actor?->id,
@@ -63,6 +66,8 @@ class PayrollPaymentService
             $run = $record->run;
             $this->runService->syncRunTotals($run);
             $this->refreshRunPaymentStatus($run->fresh());
+
+            $this->accounting->postPayrollPayment($payment->fresh(), $actor);
 
             return $payment->fresh();
         });

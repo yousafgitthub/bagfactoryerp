@@ -432,6 +432,33 @@ class DanaBatchPostingService
             return;
         }
 
-        // Accounting journals (Phase 4) attach here when configured.
+        $batch->loadMissing('inventoryLinks.inventoryTransaction.ledgerEntries');
+        $value = 0.0;
+        foreach ($batch->inventoryLinks as $link) {
+            if ($link->link_type !== 'output') {
+                continue;
+            }
+            $value += (float) $link->inventoryTransaction?->ledgerEntries
+                ->where('quantity', '>', 0)
+                ->sum('total_value');
+        }
+
+        if ($value <= 0) {
+            return;
+        }
+
+        $actor = User::query()->find($batch->posted_by ?? $batch->created_by);
+        if (! $actor) {
+            return;
+        }
+
+        app(\App\Services\Accounting\AccountingIntegrationService::class)->postProductionCapitalization(
+            sourceType: 'dana_production_batch',
+            sourceId: $batch->id,
+            entryDate: ($batch->posted_at ?? now())->toDateString(),
+            amount: $value,
+            description: "Capitalize dana batch {$batch->batch_number}",
+            actor: $actor,
+        );
     }
 }

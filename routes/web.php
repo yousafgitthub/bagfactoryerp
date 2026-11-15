@@ -32,6 +32,14 @@ use App\Http\Controllers\Hr\PayrollRunController;
 use App\Http\Controllers\Hr\ProductionAssignmentController;
 use App\Http\Controllers\MachinesHallsHubController;
 use App\Http\Controllers\MasterData\MasterDataController;
+use App\Http\Controllers\Accounting\AccountingHubController;
+use App\Http\Controllers\Accounting\CompanyLoanController;
+use App\Http\Controllers\Accounting\FinancialReportController;
+use App\Http\Controllers\Accounting\GlAccountController;
+use App\Http\Controllers\Accounting\JournalEntryController;
+use App\Http\Controllers\Accounting\TreasuryAccountController;
+use App\Http\Controllers\Expenses\ExpenseController;
+use App\Http\Controllers\Expenses\ExpensesHubController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Purchases\GoodsReceiptController;
@@ -545,19 +553,55 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('sales.customers.update');
     });
 
-    $moduleRoutes = [
-        'expenses' => 'erp.expenses',
-        'accounting' => 'erp.accounting',
-        'reports' => 'erp.reports',
-    ];
+    Route::middleware('permission:expenses.view')->prefix('expenses')->group(function () {
+        Route::get('/', ExpensesHubController::class)->name('erp.expenses');
+        Route::get('/entries', [ExpenseController::class, 'index'])->name('expenses.entries.index');
+        Route::get('/entries/create', [ExpenseController::class, 'create'])
+            ->middleware('permission:expenses.manage')
+            ->name('expenses.entries.create');
+        Route::post('/entries', [ExpenseController::class, 'store'])
+            ->middleware('permission:expenses.manage')
+            ->name('expenses.entries.store');
+    });
 
-    foreach ($moduleRoutes as $slug => $routeName) {
-        Route::get("/{$slug}", function (\Illuminate\Http\Request $request) use ($slug) {
-            return app(ModuleController::class)($request, $slug);
-        })
-            ->middleware("permission:{$slug}.view")
-            ->name($routeName);
-    }
+    Route::middleware('permission:accounting.view')->prefix('accounting')->group(function () {
+        Route::get('/', AccountingHubController::class)->name('erp.accounting');
+
+        Route::get('/gl-accounts', [GlAccountController::class, 'index'])->name('accounting.gl-accounts.index');
+        Route::get('/journals', [JournalEntryController::class, 'index'])->name('accounting.journals.index');
+        Route::get('/journals/{journalEntry}', [JournalEntryController::class, 'show'])->name('accounting.journals.show');
+
+        Route::get('/treasury', [TreasuryAccountController::class, 'index'])->name('accounting.treasury.index');
+        Route::post('/treasury/transfer', [TreasuryAccountController::class, 'storeTransfer'])
+            ->middleware('permission:accounting.manage')
+            ->name('accounting.treasury.transfer');
+
+        Route::get('/company-loans', [CompanyLoanController::class, 'index'])->name('accounting.company-loans.index');
+        Route::get('/company-loans/create', [CompanyLoanController::class, 'create'])
+            ->middleware('permission:accounting.manage')
+            ->name('accounting.company-loans.create');
+        Route::post('/company-loans', [CompanyLoanController::class, 'store'])
+            ->middleware('permission:accounting.manage')
+            ->name('accounting.company-loans.store');
+        Route::post('/company-loans/{companyLoan}/repayments', [CompanyLoanController::class, 'storeRepayment'])
+            ->middleware('permission:accounting.manage')
+            ->name('accounting.company-loans.repayments.store');
+
+        Route::get('/reports/trial-balance', [FinancialReportController::class, 'trialBalance'])
+            ->name('accounting.reports.trial-balance');
+        Route::get('/reports/profit-loss', [FinancialReportController::class, 'profitAndLoss'])
+            ->name('accounting.reports.profit-loss');
+        Route::get('/reports/balance-sheet', [FinancialReportController::class, 'balanceSheet'])
+            ->name('accounting.reports.balance-sheet');
+        Route::get('/reports/ledger', [FinancialReportController::class, 'ledger'])
+            ->name('accounting.reports.ledger');
+    });
+
+    Route::get('/reports', function (\Illuminate\Http\Request $request) {
+        return app(ModuleController::class)($request, 'reports');
+    })
+        ->middleware('permission:reports.view')
+        ->name('erp.reports');
 });
 
 Route::middleware('auth')->group(function () {

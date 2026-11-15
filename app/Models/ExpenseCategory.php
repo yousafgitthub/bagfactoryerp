@@ -16,6 +16,7 @@ class ExpenseCategory extends Model
         'name',
         'parent_id',
         'description',
+        'gl_account_id',
         'status',
     ];
 
@@ -27,5 +28,10 @@ class ExpenseCategory extends Model
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    public function glAccount(): BelongsTo
+    {
+        return $this->belongsTo(GlAccount::class, 'gl_account_id');
     }
 }
