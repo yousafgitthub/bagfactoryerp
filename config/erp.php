@@ -84,7 +84,7 @@ return [
             'dashboard.view',
             'employees.view', 'employees.manage',
             'attendance.view', 'attendance.manage',
-            'payroll.view', 'payroll.manage',
+            'payroll.view', 'payroll.manage', 'payroll.approve',
             'reports.view',
         ],
         'production-operator' => [

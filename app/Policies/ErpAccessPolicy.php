@@ -41,6 +41,23 @@ class ErpAccessPolicy
         return $user->can('shopping-bag-production.manage');
     }
 
+    public function manageEmployees(User $user): bool
+    {
+        return $user->can('employees.manage');
+    }
+
+    public function manageAttendance(User $user): bool
+    {
+        return $user->can('attendance.manage');
+    }
+
+    public function approveOvertime(User $user): bool
+    {
+        return $user->can('payroll.approve')
+            || $user->can('employees.manage')
+            || $user->can('attendance.manage');
+    }
+
     public function approvePayroll(User $user): bool
     {
         return $user->can('payroll.approve');

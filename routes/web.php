@@ -17,6 +17,13 @@ use App\Http\Controllers\Inventory\InventoryLedgerController;
 use App\Http\Controllers\Inventory\InventoryReconciliationController;
 use App\Http\Controllers\Inventory\InventoryTransactionController;
 use App\Http\Controllers\Inventory\MaterialController;
+use App\Http\Controllers\Hr\AttendanceController;
+use App\Http\Controllers\Hr\AttendanceHubController;
+use App\Http\Controllers\Hr\EmployeeController;
+use App\Http\Controllers\Hr\EmployeeHubController;
+use App\Http\Controllers\Hr\HrReportController;
+use App\Http\Controllers\Hr\OvertimeController;
+use App\Http\Controllers\Hr\ProductionAssignmentController;
 use App\Http\Controllers\MachinesHallsHubController;
 use App\Http\Controllers\MasterData\MasterDataController;
 use App\Http\Controllers\ModuleController;
@@ -223,9 +230,75 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/reports/finished-stock', [BagReportController::class, 'finishedStock'])->name('bag.reports.finished-stock');
     });
 
+    Route::middleware('permission:employees.view')->prefix('employees')->group(function () {
+        Route::get('/', EmployeeHubController::class)->name('erp.employees');
+
+        Route::get('/directory', [EmployeeController::class, 'index'])->name('hr.employees.index');
+        Route::get('/directory/create', [EmployeeController::class, 'create'])
+            ->middleware('permission:employees.manage')
+            ->name('hr.employees.create');
+        Route::post('/directory', [EmployeeController::class, 'store'])
+            ->middleware('permission:employees.manage')
+            ->name('hr.employees.store');
+        Route::get('/directory/{employee}', [EmployeeController::class, 'show'])->name('hr.employees.show');
+        Route::get('/directory/{employee}/edit', [EmployeeController::class, 'edit'])
+            ->middleware('permission:employees.manage')
+            ->name('hr.employees.edit');
+        Route::put('/directory/{employee}', [EmployeeController::class, 'update'])
+            ->middleware('permission:employees.manage')
+            ->name('hr.employees.update');
+
+        Route::get('/production-assignments', [ProductionAssignmentController::class, 'index'])->name('hr.production-assignments.index');
+        Route::get('/production-assignments/create', [ProductionAssignmentController::class, 'create'])
+            ->middleware('permission:employees.manage')
+            ->name('hr.production-assignments.create');
+        Route::post('/production-assignments', [ProductionAssignmentController::class, 'store'])
+            ->middleware('permission:employees.manage')
+            ->name('hr.production-assignments.store');
+        Route::get('/production-assignments/{production_assignment}/edit', [ProductionAssignmentController::class, 'edit'])
+            ->middleware('permission:employees.manage')
+            ->name('hr.production-assignments.edit');
+        Route::put('/production-assignments/{production_assignment}', [ProductionAssignmentController::class, 'update'])
+            ->middleware('permission:employees.manage')
+            ->name('hr.production-assignments.update');
+
+        Route::get('/reports/department-roster', [HrReportController::class, 'departmentEmployees'])
+            ->name('hr.reports.department-employees');
+    });
+
+    Route::middleware('permission:attendance.view')->prefix('attendance')->group(function () {
+        Route::get('/', AttendanceHubController::class)->name('erp.attendance');
+
+        Route::get('/register', [AttendanceController::class, 'index'])->name('hr.attendance.index');
+        Route::get('/register/create', [AttendanceController::class, 'create'])
+            ->middleware('permission:attendance.manage')
+            ->name('hr.attendance.create');
+        Route::post('/register', [AttendanceController::class, 'store'])
+            ->middleware('permission:attendance.manage')
+            ->name('hr.attendance.store');
+        Route::get('/register/{attendance}/edit', [AttendanceController::class, 'edit'])
+            ->middleware('permission:attendance.manage')
+            ->name('hr.attendance.edit');
+        Route::put('/register/{attendance}', [AttendanceController::class, 'update'])
+            ->middleware('permission:attendance.manage')
+            ->name('hr.attendance.update');
+
+        Route::get('/daily', [AttendanceController::class, 'daily'])->name('hr.attendance.daily');
+        Route::post('/daily', [AttendanceController::class, 'storeDaily'])
+            ->middleware('permission:attendance.manage')
+            ->name('hr.attendance.daily.store');
+
+        Route::get('/monthly-report', [AttendanceController::class, 'monthly'])->name('hr.attendance.monthly');
+
+        Route::get('/overtime', [OvertimeController::class, 'index'])->name('hr.overtime.index');
+        Route::post('/overtime', [OvertimeController::class, 'store'])
+            ->middleware('permission:attendance.manage')
+            ->name('hr.overtime.store');
+        Route::post('/overtime/{overtime}/approve', [OvertimeController::class, 'approve'])
+            ->name('hr.overtime.approve');
+    });
+
     $moduleRoutes = [
-        'employees' => 'erp.employees',
-        'attendance' => 'erp.attendance',
         'payroll' => 'erp.payroll',
         'purchases' => 'erp.purchases',
         'suppliers' => 'erp.suppliers',
