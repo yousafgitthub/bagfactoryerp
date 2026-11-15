@@ -58,6 +58,11 @@ class ErpAccessPolicy
             || $user->can('attendance.manage');
     }
 
+    public function managePayroll(User $user): bool
+    {
+        return $user->can('payroll.manage');
+    }
+
     public function approvePayroll(User $user): bool
     {
         return $user->can('payroll.approve');

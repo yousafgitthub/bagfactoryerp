@@ -23,6 +23,12 @@ use App\Http\Controllers\Hr\EmployeeController;
 use App\Http\Controllers\Hr\EmployeeHubController;
 use App\Http\Controllers\Hr\HrReportController;
 use App\Http\Controllers\Hr\OvertimeController;
+use App\Http\Controllers\Hr\EmployeeAdvanceController;
+use App\Http\Controllers\Hr\EmployeeLoanController;
+use App\Http\Controllers\Hr\PayrollHubController;
+use App\Http\Controllers\Hr\PayrollRecordController;
+use App\Http\Controllers\Hr\PayrollReportController;
+use App\Http\Controllers\Hr\PayrollRunController;
 use App\Http\Controllers\Hr\ProductionAssignmentController;
 use App\Http\Controllers\MachinesHallsHubController;
 use App\Http\Controllers\MasterData\MasterDataController;
@@ -298,8 +304,61 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('hr.overtime.approve');
     });
 
+    Route::middleware('permission:payroll.view')->prefix('payroll')->group(function () {
+        Route::get('/', PayrollHubController::class)->name('erp.payroll');
+
+        Route::get('/runs', [PayrollRunController::class, 'index'])->name('hr.payroll.runs.index');
+        Route::get('/runs/create', [PayrollRunController::class, 'create'])
+            ->middleware('permission:payroll.manage')
+            ->name('hr.payroll.runs.create');
+        Route::post('/runs', [PayrollRunController::class, 'store'])
+            ->middleware('permission:payroll.manage')
+            ->name('hr.payroll.runs.store');
+        Route::get('/runs/{payrollRun}', [PayrollRunController::class, 'show'])->name('hr.payroll.runs.show');
+        Route::post('/runs/{payrollRun}/generate', [PayrollRunController::class, 'generate'])
+            ->middleware('permission:payroll.manage')
+            ->name('hr.payroll.runs.generate');
+        Route::post('/runs/{payrollRun}/review', [PayrollRunController::class, 'review'])
+            ->middleware('permission:payroll.manage')
+            ->name('hr.payroll.runs.review');
+        Route::post('/runs/{payrollRun}/approve', [PayrollRunController::class, 'approve'])
+            ->name('hr.payroll.runs.approve');
+        Route::post('/runs/{payrollRun}/cancel', [PayrollRunController::class, 'cancel'])
+            ->name('hr.payroll.runs.cancel');
+
+        Route::get('/records/{payrollRecord}', [PayrollRecordController::class, 'show'])->name('hr.payroll.records.show');
+        Route::get('/records/{payrollRecord}/payslip', [PayrollRecordController::class, 'payslip'])->name('hr.payroll.records.payslip');
+        Route::post('/records/{payrollRecord}/recalculate', [PayrollRecordController::class, 'recalculate'])
+            ->middleware('permission:payroll.manage')
+            ->name('hr.payroll.records.recalculate');
+        Route::put('/records/{payrollRecord}/lines', [PayrollRecordController::class, 'updateLines'])
+            ->middleware('permission:payroll.manage')
+            ->name('hr.payroll.records.lines');
+        Route::post('/records/{payrollRecord}/payments', [PayrollRecordController::class, 'storePayment'])
+            ->middleware('permission:payroll.manage')
+            ->name('hr.payroll.records.payments.store');
+
+        Route::get('/advances', [EmployeeAdvanceController::class, 'index'])->name('hr.payroll.advances.index');
+        Route::get('/advances/create', [EmployeeAdvanceController::class, 'create'])
+            ->middleware('permission:payroll.manage')
+            ->name('hr.payroll.advances.create');
+        Route::post('/advances', [EmployeeAdvanceController::class, 'store'])
+            ->middleware('permission:payroll.manage')
+            ->name('hr.payroll.advances.store');
+
+        Route::get('/loans', [EmployeeLoanController::class, 'index'])->name('hr.payroll.loans.index');
+        Route::get('/loans/create', [EmployeeLoanController::class, 'create'])
+            ->middleware('permission:payroll.manage')
+            ->name('hr.payroll.loans.create');
+        Route::post('/loans', [EmployeeLoanController::class, 'store'])
+            ->middleware('permission:payroll.manage')
+            ->name('hr.payroll.loans.store');
+
+        Route::get('/reports/outstanding', [PayrollReportController::class, 'outstanding'])
+            ->name('hr.payroll.reports.outstanding');
+    });
+
     $moduleRoutes = [
-        'payroll' => 'erp.payroll',
         'purchases' => 'erp.purchases',
         'suppliers' => 'erp.suppliers',
         'sales' => 'erp.sales',
