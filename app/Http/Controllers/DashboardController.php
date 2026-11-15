@@ -22,7 +22,11 @@ class DashboardController extends Controller
             'breadcrumbs' => [
                 ['label' => 'Dashboard'],
             ],
-            'dashboard' => $this->dashboardData->forUser($request->user()),
+            'dashboard' => $this->dashboardData->forUser($request->user(), [
+                'period' => $request->string('period', 'week')->toString(),
+                'from' => $request->input('from'),
+                'to' => $request->input('to'),
+            ]),
         ]);
     }
 }

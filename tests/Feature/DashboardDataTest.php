@@ -30,10 +30,9 @@ class DashboardDataTest extends TestCase
 
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
-            ->has('dashboard.summary', 4)
-            ->has('dashboard.production_trend.points', 7)
-            ->where('dashboard.summary.0.key', 'active_users')
-            ->where('dashboard.summary.0.value', 1));
+            ->has('dashboard.summary', 12)
+            ->has('dashboard.production_trend.points')
+            ->where('dashboard.summary.6.key', 'active_employees'));
     }
 
     public function test_dashboard_service_returns_structure_without_transactional_tables(): void
@@ -43,10 +42,21 @@ class DashboardDataTest extends TestCase
         $data = app(DashboardDataService::class)->forUser($user);
 
         $this->assertArrayHasKey('summary', $data);
-        $this->assertCount(4, $data['summary']);
+        $this->assertCount(12, $data['summary']);
         $this->assertArrayHasKey('points', $data['production_trend']);
-        $this->assertCount(7, $data['production_trend']['points']);
         $this->assertSame([], $data['inventory_alerts']);
         $this->assertSame([], $data['recent_transactions']);
+        $this->assertArrayHasKey('filters', $data);
+    }
+
+    public function test_dashboard_respects_period_filter(): void
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user->assignRole('owner-admin');
+
+        $response = $this->actingAs($user)->get(route('dashboard', ['period' => 'today']));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->where('dashboard.filters.period', 'today'));
     }
 }
